@@ -37,7 +37,11 @@ curl -s -o /dev/null -w "%{http_code}\n" https://promoter.thevuteam.com/admin   
 ## همگام‌سازی با GitHub
 ریپو: `github.com/farshidfallah0-cpu/promoter.thevuteam.com-final` (**عمومی**).
 - `scripts/sync-to-github.sh`: کد زنده‌ی بک‌اند و تنظیمات nginx/systemd را در ریپو کپی می‌کند، commit می‌زند و push می‌کند. قبل از commit اسکن امنیتی دارد (فایل‌های `.env`/DB/xlsx/آپلود، `mehramStores.js`، کلید API) و در صورت مشاهده **متوقف می‌شود**.
-- خودکار: (۱) هوک `Stop` در `.claude/settings.json` بعد از هر پاسخ Claude Code اجرا می‌کند؛ (۲) کرون هر ۳۰ دقیقه (`crontab -l`).
+- **خودکارسازی (فعلاً فعال نشده — دو گزینه، هر کدام یا هر دو):**
+  1. کرون هر ۳۰ دقیقه: `( crontab -l 2>/dev/null; echo "*/30 * * * * /root/VU-event/scripts/sync-to-github.sh >/dev/null 2>&1" ) | crontab -`
+  2. هوک `Stop` در Claude Code بعد از هر پاسخ (فایل `/root/VU-event/.claude/settings.json`):
+     `{"hooks":{"Stop":[{"hooks":[{"type":"command","command":"nohup /root/VU-event/scripts/sync-to-github.sh >/dev/null 2>&1 &","timeout":10}]}]}}`
+  تا وقتی فعال نشده، بعد از هر تغییر مهم `scripts/sync-to-github.sh` را دستی اجرا کنید.
 - دستی: `/root/VU-event/scripts/sync-to-github.sh -m "توضیح تغییر"` یا `--no-push`.
 - احراز هویت: **deploy key** با دسترسی نوشتن (کلید خصوصی `/root/.ssh/github_vu_deploy`، alias `github-vu` در `~/.ssh/config`). اگر push خطا داد: لاگ `.sync.log`؛ احتمالاً کلید در GitHub → Settings → Deploy keys (✓ Allow write access) اضافه نشده.
 
