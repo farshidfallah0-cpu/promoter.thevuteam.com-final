@@ -1,0 +1,106 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Node modules
+node_modules/
+frontend/node_modules/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite3
+
+# Uploads
+uploads/
+
+# Secrets
+*.pem
+*.key
+credentials.json
+sa.json
+secrets/
+
+# Archives
+*.tar.gz
+*.zip
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# mypy
+.mypy_cache/
+
+# Backup files
+*.bak
+*.bak-*
+
+# ── Added when the project was first published (public repo: no secrets, no personal data) ──
+# Spreadsheets of the client's store lists hold national IDs and phone numbers.
+*.xlsx
+*.xls
+# The real Mehram store list (shop owners' names / phones / addresses). A sample with the same schema is committed
+# as mehramStores.sample.js — see docs/OPERATIONS.md («Private data») for how to restore the real file.
+frontend/src/components/MehramSupermarketReport/mehramStores.js
+# Voice samples, uploads, DB files and their backups
+ai_tools/voices/
+*.db-shm
+*.db-wal
+*.sqlite
+backend/make_admin.py.bak
+# Local Claude Code state (the shared hooks live in .claude/settings.json)
+.claude/settings.local.json
+# Server-local helper files
+backend/To
+uvicorn.log
+*.db.*
+*.db-journal
+promoters.db*

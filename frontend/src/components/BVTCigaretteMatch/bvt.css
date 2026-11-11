@@ -1,0 +1,914 @@
+/* Scoped to .bvt-match-field only — no global selectors, so this file cannot
+   bleed into or collide with the rest of the app's styling. */
+
+.bvt-match-field {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── Search ── */
+.bvt-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.bvt-search-icon {
+  position: absolute;
+  inset-inline-start: 12px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.bvt-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 40px;
+  border-radius: 14px;
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.bvt-search-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.bvt-clear-btn {
+  position: absolute;
+  inset-inline-end: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.bvt-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  z-index: 40;
+  max-height: 280px;
+  overflow-y: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+  padding: 6px;
+}
+
+.bvt-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.bvt-dropdown-item:hover,
+.bvt-dropdown-item:active {
+  background: var(--primary-light);
+}
+
+.bvt-dd-name {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.bvt-dd-specs {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.bvt-dropdown-empty {
+  padding: 14px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ── Spec badges (nicotine / tar) ── plain icon + text, no heavy icon-circle
+   (that filled circle was what read as "bold/chunky"), everything on one
+   shared line-height so the icon's own box and the text's line box actually
+   center against each other instead of drifting apart. */
+.bvt-spec-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.bvt-spec-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+/* The lucide <svg> defaults to inline/baseline alignment, which reserves a
+   sliver of descender space below it — enough to visibly sit lower than the
+   text next to it even though the flex box around it is centered correctly.
+   `display: block` takes it out of that text-baseline model entirely. */
+.bvt-spec-icon svg {
+  display: block;
+}
+
+.bvt-spec-badge.nic {
+  /* The page is RTL, so a plain flex row puts the first child (the icon) on
+     the right by default — reversed here so the icon sits to the left of
+     the nicotine value. */
+  flex-direction: row-reverse;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.16), rgba(139, 92, 246, 0.06));
+  color: var(--primary-color);
+  border: 1px solid rgba(99, 102, 241, 0.28);
+}
+
+.bvt-spec-badge.tar {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.16), rgba(239, 68, 68, 0.06));
+  color: #ea580c;
+  border: 1px solid rgba(249, 115, 22, 0.28);
+}
+
+/* ── Selected target card ── */
+.bvt-target-card {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+}
+
+.bvt-target-label {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.bvt-target-name {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+/* ── Product grid ── */
+.bvt-products-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+@media (min-width: 480px) {
+  .bvt-products-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@property --bvt-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.bvt-product-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 10px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-card);
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.bvt-product-card:active {
+  transform: scale(0.97);
+}
+
+/* Rounds its own corners instead of relying on the card's `overflow: hidden`
+   to do it — that overflow was also cropping the recommend badge and the
+   ambient glow halo, both of which need to render outside the card's box. */
+.bvt-product-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--bvt-accent) 20%, transparent), transparent 70%);
+  pointer-events: none;
+}
+
+.bvt-product-card.recommended {
+  --bvt-angle: 0deg;
+  border-color: transparent;
+  box-shadow: 0 16px 34px rgba(99, 102, 241, 0.28), 0 0 0 1px rgba(99, 102, 241, 0.08);
+  transform: translateY(-4px) scale(1.03);
+  animation: bvt-angle-spin 3.2s linear infinite;
+  z-index: 1;
+}
+
+.bvt-product-card.recommended::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(from var(--bvt-angle), #6366f1, #ec4899, #f59e0b, #22d3ee, #6366f1);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Soft ambient halo behind the whole card — the rotating border alone read
+   flat; this gives the recommended pick real "spotlight" presence. */
+.bvt-product-card.recommended::after {
+  content: '';
+  position: absolute;
+  inset: -20px;
+  z-index: -1;
+  border-radius: 30px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.35), transparent 70%);
+  filter: blur(12px);
+  animation: bvt-glow-pulse 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes bvt-angle-spin {
+  to { --bvt-angle: 360deg; }
+}
+
+@keyframes bvt-glow-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(0.95); }
+  50% { opacity: 0.95; transform: scale(1.08); }
+}
+
+.bvt-product-card.manual-active {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.16);
+}
+
+.bvt-product-card.confirmed-pulse {
+  animation: bvt-confirm-pulse 0.9s ease 2;
+}
+
+@keyframes bvt-confirm-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55); }
+  70% { box-shadow: 0 0 0 14px rgba(34, 197, 94, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+.bvt-recommend-badge {
+  position: absolute;
+  top: -13px;
+  inset-inline-start: 50%;
+  transform: translateX(50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #6366f1, #ec4899);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  padding: 5px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.45), 0 0 0 3px var(--bg-card);
+  z-index: 3;
+  animation: bvt-badge-glow 2s ease-in-out infinite;
+}
+
+.bvt-recommend-badge svg {
+  flex-shrink: 0;
+}
+
+@keyframes bvt-badge-glow {
+  0%, 100% { box-shadow: 0 6px 16px rgba(99, 102, 241, 0.45), 0 0 0 3px var(--bg-card); }
+  50% { box-shadow: 0 6px 20px rgba(236, 72, 153, 0.55), 0 0 0 3px var(--bg-card); }
+}
+
+.bvt-manual-hint {
+  position: absolute;
+  top: 8px;
+  inset-inline-end: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(120, 120, 130, 0.16);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.bvt-manual-hint:hover {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+}
+
+.bvt-product-img-wrap {
+  position: relative;
+  z-index: 1;
+  width: 68px;
+  height: 68px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--bvt-accent) 12%, transparent);
+}
+
+.bvt-product-img {
+  width: 78%;
+  height: 78%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.18));
+}
+
+.bvt-product-name {
+  position: relative;
+  z-index: 1;
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-align: center;
+  direction: ltr;
+}
+
+.bvt-product-specs {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+}
+
+/* ── Confirm button — same indigo/violet family as the rest of the site's
+   primary actions, not an arbitrary green ── */
+.bvt-confirm-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--primary-color, #6366f1), #7c3aed);
+  color: #fff;
+  font-size: 0.86rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(99, 102, 241, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.bvt-confirm-btn:hover {
+  box-shadow: 0 12px 28px rgba(99, 102, 241, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.bvt-confirm-btn.manual {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  box-shadow: 0 10px 24px rgba(245, 158, 11, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.bvt-confirm-btn.manual:hover {
+  box-shadow: 0 12px 28px rgba(245, 158, 11, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.bvt-confirm-btn:active {
+  transform: scale(0.97);
+}
+
+.bvt-confirm-btn.loading,
+.bvt-confirm-btn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+/* ── Manual entry panel ── */
+.bvt-manual-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(245, 158, 11, 0.06);
+  border: 1px dashed rgba(245, 158, 11, 0.35);
+}
+
+.bvt-manual-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bvt-manual-thumb {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.bvt-manual-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bvt-manual-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  flex-shrink: 0;
+}
+
+.bvt-manual-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  outline: none;
+}
+
+.bvt-manual-input:focus {
+  border-color: #f59e0b;
+}
+
+/* ── History ── */
+.bvt-history {
+  border-top: 1px dashed var(--border-color);
+  padding-top: 12px;
+}
+
+.bvt-history-title {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+/* Exactly ~4 rows visible before it scrolls internally */
+/* The page is RTL, and a scrollable box's own scrollbar follows that to the
+   left by default — forcing `ltr` here alone pins it back to the right
+   (the expected/native side), with `rtl` restored on each row so the text
+   inside still reads correctly. */
+.bvt-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 208px;
+  overflow-y: auto;
+  direction: ltr;
+  padding: 0 6px 0 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) transparent;
+}
+
+.bvt-history-list .bvt-history-row {
+  direction: rtl;
+}
+
+.bvt-history-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.bvt-history-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.bvt-history-list::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 999px;
+  opacity: 0.5;
+}
+
+.bvt-history-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+}
+
+.bvt-history-thumb {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.bvt-history-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.bvt-history-main {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bvt-history-manual-tag {
+  flex-shrink: 0;
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 999px;
+  padding: 1px 6px;
+}
+
+.bvt-history-time {
+  font-size: 0.66rem;
+  color: var(--text-muted);
+}
+
+.bvt-history-loc {
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* ── Demographics Box ── */
+.bvt-demographics {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  padding: 16px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+.bvt-demo-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bvt-demo-row.slide-down {
+  animation: bvtSlideDown 0.3s ease-out forwards;
+}
+
+@keyframes bvtSlideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.bvt-demo-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.bvt-demo-options {
+  display: flex;
+  gap: 10px;
+}
+
+.bvt-demo-btn {
+  flex: 1;
+  padding: 12px;
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.bvt-demo-btn.active {
+  border-color: var(--primary-color);
+  background: rgba(99, 102, 241, 0.08);
+  color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+}
+
+.bvt-demo-btn:hover:not(.active) {
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+/* ── Action Section & Acceptance Box ── */
+.bvt-action-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bvt-accept-reject-row {
+  display: flex;
+  gap: 10px;
+}
+
+.bvt-ar-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-color);
+}
+
+.bvt-ar-btn.accept {
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.bvt-ar-btn.accept:hover {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: #10b981;
+}
+
+.bvt-ar-btn.reject {
+  color: #f43f5e;
+  border-color: rgba(244, 63, 94, 0.4);
+}
+
+.bvt-ar-btn.reject:hover {
+  background: rgba(244, 63, 94, 0.08);
+  border-color: #f43f5e;
+}
+
+.bvt-acceptance-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  background: rgba(244, 63, 94, 0.04);
+  border: 1px dashed rgba(244, 63, 94, 0.3);
+  border-radius: 14px;
+  animation: bvtSlideDown 0.3s ease-out forwards;
+}
+
+.bvt-acceptance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bvt-acceptance-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.bvt-acceptance-cancel {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.bvt-acceptance-cancel:hover {
+  color: var(--text-primary);
+}
+
+.bvt-reject-select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 0.86rem;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  transition: all 0.2s ease;
+}
+
+.bvt-reject-select:focus {
+  border-color: #f43f5e;
+  box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.15);
+}
+
+.bvt-confirm-btn.danger {
+  background: linear-gradient(135deg, #f43f5e, #e11d48);
+  box-shadow: 0 10px 24px rgba(244, 63, 94, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.bvt-confirm-btn.danger:hover {
+  box-shadow: 0 12px 28px rgba(244, 63, 94, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* ── Manual override of the "پیشنهاد ویژه" ── */
+.bvt-target-hint {
+  flex-basis: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.bvt-product-card.recommended-skipped {
+  opacity: 0.55;
+  filter: saturate(0.6);
+}
+
+.bvt-product-card.recommended-skipped .bvt-recommend-badge {
+  animation: none;
+  background: var(--text-muted);
+  box-shadow: 0 0 0 3px var(--bg-card);
+}
+
+.bvt-choice-badge {
+  position: absolute;
+  top: -13px;
+  inset-inline-start: 50%;
+  transform: translateX(50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #f59e0b, #ea580c);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 5px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4), 0 0 0 3px var(--bg-card);
+  z-index: 3;
+}
+
+.bvt-override-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(245, 158, 11, 0.07);
+  border: 1px dashed rgba(245, 158, 11, 0.45);
+  animation: bvt-override-in 0.25s ease;
+}
+
+@keyframes bvt-override-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+.bvt-override-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bvt-override-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #d97706;
+}
+
+.bvt-override-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  background: rgba(99, 102, 241, 0.08);
+  color: #6366f1;
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.bvt-override-flow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.bvt-override-step {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  min-width: 0;
+}
+
+.bvt-override-step-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.bvt-override-step-val {
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.bvt-override-step.skipped .bvt-override-step-val {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.bvt-override-step.chosen {
+  border-color: rgba(245, 158, 11, 0.55);
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.bvt-override-step.chosen .bvt-override-step-val {
+  color: #d97706;
+}
+
+.bvt-note-input {
+  resize: vertical;
+  min-height: 44px;
+  font-family: inherit;
+  line-height: 1.6;
+}
+
+.bvt-note-input.is-override {
+  border-color: rgba(245, 158, 11, 0.55);
+}
+
+.bvt-history-note {
+  display: block;
+  font-size: 0.66rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 420px) {
+  .bvt-override-flow {
+    grid-template-columns: 1fr;
+  }
+}

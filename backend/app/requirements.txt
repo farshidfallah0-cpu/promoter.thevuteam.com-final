@@ -1,0 +1,16 @@
+fastapi==0.124.4
+uvicorn[standard]==0.38.0
+python-multipart==0.0.20
+PyJWT==2.13.0
+passlib[bcrypt]==1.7.4
+cryptography==48.0.0
+gspread==6.2.1
+google-auth==2.52.0
+sqlalchemy==2.0.45
+pydantic==2.12.5
+python-dotenv==1.2.1
+openpyxl==3.1.5
+reportlab==5.0.0
+google-generativeai==0.8.6
+requests==2.32.3
+Pillow==12.2.0

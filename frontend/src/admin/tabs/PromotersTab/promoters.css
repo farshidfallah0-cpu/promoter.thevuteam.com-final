@@ -1,0 +1,808 @@
+/* ============================= */
+/* Promoters Tab — Complete Styles */
+/* ============================= */
+
+/* Container */
+.promoters-tab-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+}
+
+/* ============================= */
+/* Toolbar */
+/* ============================= */
+.promoters-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  padding: 16px 20px;
+}
+
+.promoters-toolbar-right {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.promoters-stats {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.pstat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.pstat-num {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--admin-text);
+}
+
+.pstat-num.online {
+  color: var(--admin-success);
+}
+
+.pstat-num.offline {
+  color: var(--admin-text-muted);
+}
+
+.pstat-label {
+  font-size: 0.72rem;
+  color: var(--admin-text-muted);
+  letter-spacing: 0.02em;
+  font-weight: 500;
+}
+
+.pstat-divider {
+  width: 1px;
+  height: 32px;
+  background: var(--admin-border);
+}
+
+/* ============================= */
+/* Create Promoter Form */
+/* ============================= */
+.create-promoter-form {
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+  animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.form-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--admin-text);
+  border-bottom: 1px solid var(--admin-border);
+  padding-bottom: 14px;
+  margin-bottom: 4px;
+}
+
+.form-fields-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.form-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.form-field-group label {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--admin-text-secondary);
+  letter-spacing: 0.01em;
+}
+
+.required-star {
+  color: #ef4444;
+  margin-right: 2px;
+}
+
+/* Password Field */
+.password-field-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-field-wrapper .admin-input {
+  padding-left: 40px;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  left: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--admin-text-muted);
+  display: flex;
+  align-items: center;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.password-toggle-btn:hover {
+  color: var(--admin-text);
+}
+
+.password-toggle-btn.inline {
+  position: static;
+  left: unset;
+  padding: 4px 6px;
+  background: var(--admin-bg);
+  border-radius: 6px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+/* Ghost button */
+.admin-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--admin-text-secondary);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-btn-ghost:hover {
+  background: var(--admin-card);
+  color: var(--admin-text);
+}
+
+/* Danger button */
+.admin-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: var(--admin-radius);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-btn-danger:hover {
+  background: rgba(239, 68, 68, 0.18);
+}
+
+/* ============================= */
+/* Promoter Grid & Cards */
+/* ============================= */
+.promoters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 16px;
+}
+
+.promoters-empty {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 20px;
+  color: var(--admin-text-muted);
+  opacity: 0.6;
+}
+
+/* Card */
+.promoter-card {
+  position: relative;
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  padding: 16px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.promoter-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+  border-color: var(--admin-primary);
+}
+
+.promoter-card.card-online {
+  border-color: rgba(16, 185, 129, 0.35);
+  border-right: 3px solid #10b981;
+}
+
+.promoter-card.card-online:hover {
+  border-color: var(--admin-success);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.12);
+}
+
+/* Captain (supervisor) cards — kept visually distinct from regular promoter
+   cards via a left accent + glow instead of border-color, so it still shows
+   up alongside the online state's right-side border/color. */
+.promoter-card.card-captain {
+  border-left: 3px solid #f59e0b;
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.18);
+}
+
+.promoter-card.card-captain:hover {
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(245, 158, 11, 0.35);
+}
+
+.captain-role-val {
+  color: #f59e0b;
+  font-weight: 700;
+}
+
+/* top bar is hidden — caused clipping issues */
+.card-online-bar {
+  display: none;
+}
+
+/* Card Top Row */
+.pc-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Avatar */
+.pc-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: white;
+  letter-spacing: 0.5px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
+}
+
+.pc-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
+
+/* Name block */
+.pc-name-block {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.pc-name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--admin-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pc-username {
+  font-size: 0.78rem;
+  color: var(--admin-text-muted);
+}
+
+/* Status Badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(75, 85, 99, 0.15);
+  color: var(--admin-text-muted);
+  border: 1px solid rgba(75, 85, 99, 0.2);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.status-badge.online {
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--admin-success);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--admin-text-muted);
+  flex-shrink: 0;
+  /* Fixed size — never changes */
+}
+
+.badge-dot.online {
+  background: var(--admin-success);
+  /* Use box-shadow animation instead of scale/opacity to avoid layout shifts */
+  animation: dot-glow 2s ease-in-out infinite;
+}
+
+@keyframes dot-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 2px rgba(16, 185, 129, 0.4);
+  }
+
+  50% {
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.9);
+  }
+}
+
+/* Divider */
+.pc-divider {
+  height: 1px;
+  background: var(--admin-border);
+  margin: 0;
+}
+
+/* Info Rows */
+.pc-info-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 86%;
+}
+
+.pc-info-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+}
+
+.pc-info-icon {
+  font-size: 11px;
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.pc-info-label {
+  color: var(--admin-text-muted);
+  flex-shrink: 0;
+}
+
+.pc-info-val {
+  font-weight: 500;
+  color: var(--admin-text);
+  flex: 1;
+  text-align: left;
+  direction: ltr;
+}
+
+.pc-info-val.text-success {
+  color: var(--admin-success);
+  font-weight: 600;
+}
+
+/* Card Footer */
+.pc-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.72rem;
+  color: var(--admin-text-muted);
+  padding-top: 8px;
+  border-top: 1px solid var(--admin-border);
+  transition: color 0.2s;
+  margin-top: 2px;
+}
+
+.promoter-card:hover .pc-footer {
+  color: var(--admin-primary);
+}
+
+/* ============================= */
+/* Promoter Modal */
+/* ============================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.promoter-modal {
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: calc(var(--admin-radius) + 4px);
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+  animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Modal Header Bar */
+.modal-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24px 24px 0;
+  margin-bottom: 20px;
+}
+
+.modal-avatar-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.modal-avatar {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: white;
+  flex-shrink: 0;
+}
+
+.modal-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
+
+.modal-title {
+  margin: 0 0 4px;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--admin-text);
+}
+
+.modal-subtitle {
+  font-size: 0.85rem;
+  color: var(--admin-text-muted);
+}
+
+.modal-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--admin-bg);
+  border: 1px solid var(--admin-border);
+  color: var(--admin-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.modal-icon-btn:hover {
+  background: var(--admin-card-hover);
+  color: var(--admin-text);
+}
+
+.modal-icon-btn.edit:hover {
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--admin-primary);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+/* Modal Body */
+.modal-body {
+  padding: 0 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Info Grid */
+.modal-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.modal-info-item {
+  background: var(--admin-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: calc(var(--admin-radius) - 2px);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.modal-info-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.modal-info-label {
+  font-size: 0.76rem;
+  color: var(--admin-text-muted);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.modal-info-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--admin-text);
+}
+
+.password-value {
+  font-family: monospace;
+  font-size: 1rem;
+  letter-spacing: 1px;
+}
+
+.password-display-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Modal Actions */
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  padding-top: 4px;
+  border-top: 1px solid var(--admin-border);
+}
+
+.modal-actions .admin-btn-primary {
+  flex: 1;
+}
+
+/* Edit Form inside modal */
+.modal-edit-form .form-fields-grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+/* Fade-in animation */
+.fade-in {
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .promoters-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .promoters-stats {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .pstat-divider {
+    display: none;
+  }
+  
+  .pstat {
+    flex: 1;
+    min-width: 80px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 8px;
+    border-radius: 10px;
+  }
+
+  .promoters-toolbar-right {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .promoters-toolbar-right .admin-search-bar {
+    width: 100%;
+    max-width: none;
+    box-sizing: border-box;
+  }
+
+  .promoters-toolbar-right button {
+    width: 100%;
+  }
+
+  /* Make forms single column */
+  .modal-info-grid,
+  .modal-edit-form .form-fields-grid,
+  .create-promoter-form .form-fields-grid,
+  .form-fields-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .promoters-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+
+  /* Modal responsiveness */
+  .promoter-modal {
+    max-width: 95%;
+    margin: 10px;
+  }
+  
+  .modal-header-bar {
+    padding: 20px 20px 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .modal-header-bar > div:last-child {
+    align-self: flex-start;
+  }
+
+  .modal-body {
+    padding: 0 20px 20px;
+  }
+
+  .create-promoter-form {
+    padding: 16px;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+  
+  .modal-actions button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .promoters-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================= */
+/* Modal Avatar Status Dot */
+/* ============================= */
+.status-dot {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #4b5563;
+  border: 2px solid var(--admin-card);
+  transition: background 0.3s;
+}
+
+.status-dot.online {
+  background: var(--admin-success);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+}
+
+.status-dot.large {
+  width: 16px;
+  height: 16px;
+  bottom: 0;
+  right: 0;
+}
+
+/* Utility */
+.text-success {
+  color: var(--admin-success) !important;
+}
+/* ── Larger profile photos + photo change button ── */
+.pc-avatar-holder { position: relative; flex-shrink: 0; }
+.promoter-card .pc-avatar { width: 84px; height: 84px; font-size: 1.6rem; border: 2px solid rgba(255,255,255,0.12); }
+.modal-avatar { width: 112px; height: 112px; font-size: 2rem; border: 3px solid rgba(255,255,255,0.14); }
+.avatar-upload-btn {
+  position: absolute; bottom: 0; left: 0; width: 28px; height: 28px; border-radius: 50%;
+  background: #f6c016; color: #1a1400; display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--admin-card, #191b20); cursor: pointer; line-height: 0; z-index: 2;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.35); transition: transform 0.15s ease;
+}
+.avatar-upload-btn:hover { transform: scale(1.12); }
+.avatar-upload-btn input { display: none; }
+.avatar-upload-spinner {
+  width: 12px; height: 12px; border-radius: 50%;
+  border: 2px solid rgba(26,20,0,0.25); border-top-color: #1a1400;
+  animation: avatar-spin 0.7s linear infinite;
+}
+@keyframes avatar-spin { to { transform: rotate(360deg); } }
+label.avatar-upload-btn { display: flex !important; align-items: center; justify-content: center; margin: 0 !important; padding: 0; }

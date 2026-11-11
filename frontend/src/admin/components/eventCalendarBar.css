@@ -1,0 +1,500 @@
+/* ═══════════════════════════════════════════════════
+   EventCalendarBar — Minimal Executive Calendar Strip
+   Dynamic grid, horizontal cards, full-width
+   ═══════════════════════════════════════════════════ */
+
+.ecb-root {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  padding: 12px 16px 14px;
+  margin-bottom: 20px;
+  direction: rtl;
+  position: relative;
+  overflow: hidden;
+}
+
+/* gradient top rule */
+.ecb-root::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #6366f1 0%, #a855f7 50%, #06b6d4 100%);
+  opacity: 0.75;
+}
+
+/* ── Header ── */
+.ecb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.ecb-header-left {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.ecb-cal-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(99, 102, 241, 0.14);
+  color: #818cf8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ecb-cal-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.ecb-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.ecb-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.ecb-sub {
+  font-size: 10.5px;
+  color: rgba(255, 255, 255, 0.745);
+}
+
+.ecb-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* countdown pill — red while waiting for the event to start */
+.ecb-countdown-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 11px;
+  background: rgba(244, 63, 94, 0.1);
+  border: 1px solid rgba(244, 63, 94, 0.22);
+  border-radius: 20px;
+}
+
+.ecb-countdown-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(244, 63, 94, 0.8);
+}
+
+.ecb-countdown-time {
+  font-size: 12px;
+  font-weight: 900;
+  color: #f43f5e;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1.5px;
+}
+
+/* countdown pill — green while the event is in progress (counting down to end) */
+.ecb-countdown-pill.is-active {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.22);
+}
+
+.ecb-countdown-pill.is-active .ecb-countdown-label {
+  color: rgba(16, 185, 129, 0.8);
+}
+
+.ecb-countdown-pill.is-active .ecb-countdown-time {
+  color: #10b981;
+}
+
+/* active today pill */
+.ecb-active-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.22);
+  border-radius: 20px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #10b981;
+}
+
+.ecb-pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  animation: ecbPulse 1.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes ecbPulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.45);
+    opacity: 0.55;
+  }
+}
+
+/* progress bar */
+.ecb-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.ecb-progress-track {
+  width: 80px;
+  height: 3px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+
+.ecb-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #6366f1, #a855f7);
+  transition: width 0.6s ease;
+}
+
+.ecb-progress-pct {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.38);
+  white-space: nowrap;
+}
+
+/* ══════════════════════════════════════════
+   DYNAMIC GRID — fills full width, N columns
+   ══════════════════════════════════════════ */
+.ecb-days-grid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 140px;
+  gap: 6px;
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(129, 140, 248, 0.4) transparent;
+}
+.ecb-days-grid::-webkit-scrollbar { height: 5px; }
+.ecb-days-grid::-webkit-scrollbar-thumb { background: rgba(129, 140, 248, 0.35); border-radius: 4px; }
+.ecb-day-chip { scroll-snap-align: center; }
+
+/* expanded: wrap every day into a regular grid */
+.ecb-days-grid.expanded {
+  grid-auto-flow: row;
+  grid-auto-columns: unset;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  overflow-x: visible;
+  padding-bottom: 0;
+}
+
+.ecb-toggle-btn {
+  padding: 4px 12px; border-radius: 20px; cursor: pointer; font-family: inherit;
+  font-size: 10.5px; font-weight: 700; white-space: nowrap;
+  background: rgba(99, 102, 241, 0.1); color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.28); transition: all 0.15s ease;
+}
+.ecb-toggle-btn:hover { background: rgba(99, 102, 241, 0.2); color: #fff; }
+
+/* ── Day chip — HORIZONTAL layout ── */
+.ecb-day-chip {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0;
+  padding: 0;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.18s ease;
+  min-width: 0;
+  /* allow shrinking */
+  min-height: 52px;
+}
+
+/* top accent line */
+.ecb-day-chip::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 10px 10px 0 0;
+  opacity: 0;
+}
+
+/* ── State colours ── */
+.ecb-day-chip.past {
+  background: rgba(16, 185, 129, 0.05);
+  border-color: rgba(16, 185, 129, 0.12);
+}
+
+.ecb-day-chip.past::before {
+  background: #10b981;
+  opacity: 0.55;
+}
+
+.ecb-day-chip.today {
+  background: rgba(99, 102, 241, 0.09);
+  border-color: rgba(99, 102, 241, 0.28);
+  box-shadow: 0 0 14px rgba(99, 102, 241, 0.12);
+}
+
+.ecb-day-chip.today::before {
+  background: linear-gradient(90deg, #6366f1, #a855f7);
+  opacity: 1;
+}
+
+.ecb-day-chip.future {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+/* ── Left column: day number ── */
+.ecb-chip-num-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 10px 8px 10px;
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  /* divider between num and info */
+  flex-shrink: 0;
+  min-width: 48px;
+}
+
+.ecb-day-chip.today .ecb-chip-num-col {
+  border-left-color: rgba(99, 102, 241, 0.18);
+}
+
+.ecb-day-chip.past .ecb-chip-num-col {
+  border-left-color: rgba(16, 185, 129, 0.12);
+}
+
+.ecb-day-label {
+  font-size: 8.5px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.695);
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.ecb-day-chip.today .ecb-day-label {
+  color: rgba(129, 140, 248, 0.6);
+}
+
+.ecb-day-number {
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.863);
+}
+
+.ecb-day-chip.today .ecb-day-number {
+  color: #f1f5f9;
+}
+
+.ecb-day-chip.past .ecb-day-number {
+  color: rgba(233, 233, 233, 0.65);
+}
+
+/* ── Right column: details ── */
+.ecb-chip-info-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  padding: 7px 10px 7px 8px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.ecb-chip-top-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.ecb-day-weekday {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.76);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ecb-day-chip.today .ecb-day-weekday {
+  color: rgba(129, 140, 248, 0.75);
+}
+
+.ecb-day-month {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.782);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ecb-day-chip.today .ecb-day-month {
+  color: #c7d2fe;
+}
+
+.ecb-chip-mid-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+/* time range */
+.ecb-day-time {
+  font-size: 9px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.87);
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.ecb-day-chip.today .ecb-day-time {
+  color: rgba(167, 139, 250, 0.7);
+}
+
+/* status badge */
+.ecb-day-badge {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1.5px 6px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.ecb-day-badge.badge-today {
+  color: #818cf8;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.ecb-day-badge.badge-past {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.18);
+}
+
+.ecb-day-badge.badge-future {
+  color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* countdown inside today card — red = waiting to start, green = in progress */
+.ecb-day-countdown {
+  font-size: 11px;
+  font-weight: 900;
+  color: #f43f5e;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
+  line-height: 1;
+  display: block;
+}
+
+.ecb-day-countdown.is-active {
+  color: #10b981;
+}
+
+/* "more" button */
+.ecb-more-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(99, 102, 241, 0.06);
+  border: 1px dashed rgba(99, 102, 241, 0.2);
+  color: rgba(129, 140, 248, 0.55);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  font-family: inherit;
+}
+
+.ecb-more-btn:hover {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.35);
+  color: #818cf8;
+}
+
+/* ── Responsive ─────────────────────────────── */
+
+/* On narrow screens collapse to 2 columns max and let cards wrap */
+@media (max-width: 640px) {
+  .ecb-root {
+    padding: 10px 12px 12px;
+    margin-bottom: 14px;
+  }
+
+  .ecb-header {
+    margin-bottom: 8px;
+  }
+
+  .ecb-day-number {
+    font-size: 17px;
+  }
+
+  .ecb-chip-num-col {
+    min-width: 38px;
+    padding: 6px 8px 6px 6px;
+  }
+
+  .ecb-chip-info-col {
+    padding: 6px 8px 6px 6px;
+  }
+
+  .ecb-countdown-pill,
+  .ecb-header-right .tehran-clock-date {
+    display: none;
+  }
+  .ecb-header-right { width: 100%; justify-content: space-between; }
+}
+
+@media (max-width: 640px) {
+  .ecb-days-grid { grid-auto-columns: 128px; }
+  .ecb-days-grid.expanded { grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); }
+}

@@ -1,0 +1,19 @@
+.Toastify__toast.vu-welcome-toast {
+  min-height: 0; padding: 12px 18px; border-radius: 18px; color: var(--text-color, #f5f5f5);
+  background: var(--bg-card, rgba(24, 24, 27, 0.92)); border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35); backdrop-filter: blur(14px);
+}
+.vu-welcome-body { margin: 0; padding: 0; }
+.vu-welcome { animation: vu-welcome-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; display: flex; align-items: center; gap: 12px; min-width: 190px; }
+.vu-welcome-avatar {
+  width: 38px; height: 38px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;
+  font-size: 1rem; font-weight: 900; color: #1a1a1a; background: linear-gradient(135deg, var(--primary-color, #fab809), #ffd966);
+  box-shadow: 0 6px 18px rgba(250, 184, 9, 0.35);
+}
+.vu-welcome-text { display: flex; flex-direction: column; line-height: 1.25; }
+.vu-welcome-text small { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.4px; color: var(--text-secondary, #a3a3a3); }
+.vu-welcome-text b { font-size: 1.02rem; font-weight: 800; }
+.vu-welcome-wave { margin-inline-start: auto; font-size: 1.25rem; transform-origin: 70% 70%; animation: vu-wave 1.6s ease-in-out 0.3s 2; }
+@keyframes vu-welcome-in { from { opacity: 0; transform: translateY(-14px) scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes vu-wave { 0%, 60%, 100% { transform: rotate(0); } 15% { transform: rotate(16deg); } 30% { transform: rotate(-10deg); } 45% { transform: rotate(14deg); } }
+@media (prefers-reduced-motion: reduce) { .vu-welcome, .vu-welcome-wave { animation: none; } }

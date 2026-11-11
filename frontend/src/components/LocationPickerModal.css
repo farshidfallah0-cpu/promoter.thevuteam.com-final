@@ -1,0 +1,249 @@
+.lpm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100000;
+  padding: 20px;
+}
+
+.lpm-card {
+  background: #16181f;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 640px;
+  padding: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.lpm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lpm-header h3 {
+  margin: 0;
+  color: #f1f5f9;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.lpm-close {
+  background: rgba(255, 255, 255, 0.06);
+  border: none;
+  color: #cbd5e1;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.lpm-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.lpm-search-row {
+  display: flex;
+  gap: 8px;
+}
+
+.lpm-search-input {
+  flex: 1;
+  background: #0d0f13;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 10px 14px;
+  color: #f1f5f9;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.lpm-search-input:focus {
+  outline: none;
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+.lpm-search-btn {
+  padding: 10px 18px;
+  border-radius: 12px;
+  background: #6366f1;
+  color: #fff;
+  border: none;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.lpm-search-btn:hover {
+  background: #4f46e5;
+}
+
+.lpm-search-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.lpm-search-results {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 140px;
+  overflow-y: auto;
+  background: #0d0f13;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 6px;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 2000;
+}
+
+.lpm-search-result {
+  text-align: right;
+  background: transparent;
+  border: none;
+  color: #cbd5e1;
+  font-size: 12.5px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lpm-search-result:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.lpm-map-wrap {
+  height: 320px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.lpm-hint {
+  margin: 0;
+  font-size: 11.5px;
+  color: #64748b;
+  text-align: center;
+}
+
+.lpm-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.lpm-cancel-btn {
+  padding: 10px 20px;
+  border-radius: 12px;
+  background: transparent;
+  color: #cbd5e1;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.lpm-cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.lpm-confirm-btn {
+  padding: 10px 22px;
+  border-radius: 12px;
+  background: #22c55e;
+  color: #06210f;
+  border: none;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.lpm-confirm-btn:hover {
+  background: #16a34a;
+}
+
+.lpm-confirm-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* English location label section */
+.lpm-label-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  background: rgba(99, 102, 241, 0.06);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 14px;
+}
+
+.lpm-label-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lpm-label-input {
+  background: #0d0f13;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 9px 12px;
+  color: #f1f5f9;
+  font-size: 13px;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  letter-spacing: 0.02em;
+  transition: border-color 0.2s;
+}
+
+.lpm-label-input:focus {
+  outline: none;
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+.lpm-label-input::placeholder {
+  color: #475569;
+  font-style: italic;
+}
+
+.lpm-label-hint {
+  margin: 0;
+  font-size: 10.5px;
+  color: #475569;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Small phones: the card (map + label + buttons) is taller than the screen,
+   which pushed the confirm button out of reach — let the card scroll and
+   shrink the map to fit. */
+.lpm-card {
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 600px), (max-height: 700px) {
+  .lpm-overlay { padding: 10px; }
+  .lpm-card { padding: 14px; gap: 10px; max-height: calc(100dvh - 20px); }
+  .lpm-map-wrap { height: min(320px, 42dvh); }
+}

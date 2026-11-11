@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+    <!--
+      Dynamic PWA manifest switcher.
+      Runs *before* React mounts so Chrome/Safari see the correct manifest
+      immediately on the very first paint — which is when the browser decides
+      whether to offer "Add to Home Screen" and what metadata to use.
+
+      /admin, /event → manifest-admin.json  →  "VU Dashboard"  (indigo icons)
+      anything else  → manifest.json        →  "VU"            (default icons)
+    -->
+    <script>
+      (function () {
+        var isAdmin = window.location.pathname === '/admin' ||
+                      window.location.pathname.startsWith('/admin/') ||
+                      window.location.pathname.startsWith('/admin?') ||
+                      window.location.pathname === '/event';
+
+        if (isAdmin) {
+          // Manifest
+          document.write('<link rel="manifest" id="pwa-manifest" href="/manifest-admin.json?v=3" />');
+          // Meta overrides
+          document.write('<meta name="theme-color" content="#4f46e5" />');
+          document.write('<meta name="apple-mobile-web-app-title" content="VU Dashboard" />');
+          document.write('<title>VU Dashboard</title>');
+          // Admin uses the same icon artwork as the promoter app — only the
+          // manifest name/theme color distinguish it as its own installable app.
+          document.write('<link rel="apple-touch-icon" sizes="180x180" href="/images/icon-192x192.png?v=4" />');
+          document.write('<link rel="apple-touch-icon" sizes="192x192" href="/images/icon-192x192.png?v=4" />');
+          document.write('<link rel="apple-touch-icon-precomposed" href="/images/icon-192x192.png?v=4" />');
+          document.write('<link rel="icon" type="image/png" sizes="192x192" href="/images/icon-192x192.png?v=4" />');
+          document.write('<link rel="icon" type="image/png" sizes="512x512" href="/images/icon-512x512.png?v=4" />');
+          document.write('<link rel="shortcut icon" href="/images/icon-192x192.png?v=4" />');
+        } else {
+          // Default promoter app
+          document.write('<link rel="manifest" id="pwa-manifest" href="/manifest.json" />');
+          document.write('<meta name="theme-color" content="#6366f1" />');
+          document.write('<meta name="apple-mobile-web-app-title" content="VU" />');
+          document.write('<title>VU</title>');
+          // Promoter touch icons
+          document.write('<link rel="apple-touch-icon" sizes="180x180" href="/images/icon-192x192.png" />');
+          document.write('<link rel="apple-touch-icon" sizes="192x192" href="/images/icon-192x192.png" />');
+          document.write('<link rel="apple-touch-icon-precomposed" href="/images/icon-192x192.png" />');
+          document.write('<link rel="icon" type="image/png" sizes="192x192" href="/images/icon-192x192.png" />');
+          document.write('<link rel="icon" type="image/png" sizes="512x512" href="/images/icon-512x512.png" />');
+          document.write('<link rel="shortcut icon" href="/images/icon-192x192.png" />');
+        }
+      })();
+    </script>
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" />
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('SW registered'))
+            .catch(err => console.log('SW registration failed'));
+        });
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

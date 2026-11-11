@@ -1,0 +1,781 @@
+/* ================================ */
+/* Inventory Tab — Minimal Dark Design  */
+/* ================================ */
+
+.inventory-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+}
+
+/* ── Loading ── */
+.inventory-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 80px 20px;
+  color: var(--admin-text-secondary);
+  font-size: 0.9rem;
+}
+
+.inventory-spinner {
+  width: 36px;
+  height: 36px;
+  border: 2px solid var(--admin-border);
+  border-top-color: var(--admin-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Header ── */
+.inventory-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  padding: 16px 20px;
+}
+
+.inventory-stats-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.inventory-stat-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 18px;
+  background: var(--admin-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  border-top: 2px solid var(--chip-accent);
+  min-width: 64px;
+  transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
+}
+
+.inventory-stat-chip:hover {
+  transform: translateY(-2px);
+  background: color-mix(in srgb, var(--chip-accent) 5%, transparent);
+}
+
+.inventory-stat-chip.active {
+  background: color-mix(in srgb, var(--chip-accent) 15%, transparent);
+  border-color: var(--chip-accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--chip-accent) 30%, transparent);
+}
+
+.tsc-num {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--chip-accent);
+  line-height: 1;
+}
+
+.tsc-label {
+  font-size: 0.7rem;
+  color: var(--admin-text-muted);
+  font-weight: 500;
+}
+
+.inventory-create-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background: var(--admin-primary);
+  color: white;
+  border: none;
+  border-radius: var(--admin-radius);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.inventory-create-btn:hover {
+  background: var(--admin-primary-light);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+}
+
+/* ── Filters ── */
+.inventory-filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.inventory-search {
+  flex: 1;
+  min-width: 200px;
+  margin: 0 !important;
+}
+
+.inventory-filter-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filter-pill {
+  padding: 7px 14px;
+  background: transparent;
+  border: 1px solid var(--admin-border);
+  border-radius: 20px;
+  color: var(--admin-text-secondary);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.filter-pill:hover {
+  background: var(--admin-card);
+  color: var(--admin-text);
+}
+
+.filter-pill.active {
+  background: var(--admin-primary);
+  border-color: var(--admin-primary);
+  color: white;
+}
+
+.inventory-select {
+  padding: 9px 14px;
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  color: var(--admin-text);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+  min-width: 160px;
+}
+
+.inventory-select:focus {
+  border-color: var(--admin-primary);
+}
+
+/* ── Empty State ── */
+.inventory-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.inventory-empty-icon {
+  color: var(--admin-text-muted);
+  opacity: 0.35;
+  margin-bottom: 4px;
+}
+
+.inventory-empty h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--admin-text);
+  margin: 0;
+}
+
+.inventory-empty p {
+  font-size: 0.88rem;
+  color: var(--admin-text-muted);
+  margin: 0;
+}
+
+/* ── Task List ── */
+.inventory-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 16px;
+}
+
+/* ── Task Card ── */
+.inventory-card {
+  position: relative;
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  padding: 16px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: inventoryIn 0.22s ease;
+}
+
+@keyframes inventoryIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.inventory-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+  border-color: var(--admin-primary);
+}
+
+.inventory-card.done {
+  opacity: 0.55;
+}
+
+.inventory-card.overdue {
+  border-right: 3px solid #ef4444;
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.inventory-card.overdue:hover {
+  border-color: #ef4444;
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.12);
+}
+
+/* ── Card Top Row: icon + title + status badge ── */
+.inventory-card-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.inventory-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  background: var(--p-bg, rgba(99, 102, 241, 0.12));
+}
+
+.inventory-card-title-block {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.inventory-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--admin-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inventory-card.done .inventory-title {
+  text-decoration: line-through;
+  color: var(--admin-text-muted);
+}
+
+.inventory-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border: 1px solid transparent;
+}
+
+/* ── Divider ── */
+.inventory-card-divider {
+  height: 1px;
+  background: var(--admin-border);
+  margin: 0;
+}
+
+/* ── Info Rows (same as pc-info-rows) ── */
+.inventory-info-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.inventory-info-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+}
+
+.inventory-info-icon {
+  font-size: 11px;
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.inventory-info-label {
+  color: var(--admin-text-muted);
+  flex-shrink: 0;
+}
+
+.inventory-info-val {
+  font-weight: 500;
+  color: var(--admin-text);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inventory-info-val.overdue-val {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+/* ── Card Footer ── */
+.inventory-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.72rem;
+  color: var(--admin-text-muted);
+  padding-top: 8px;
+  border-top: 1px solid var(--admin-border);
+  margin-top: 2px;
+  transition: color 0.2s;
+}
+
+.inventory-card:hover .inventory-card-footer {
+  color: var(--admin-primary);
+}
+
+.inventory-card-footer-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.inventory-quick-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  border: 1px solid var(--admin-border);
+  background: var(--admin-bg);
+  color: var(--admin-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s ease;
+  flex-shrink: 0;
+}
+
+.inventory-quick-btn.complete:hover {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #10b981;
+}
+
+.inventory-quick-btn.start:hover {
+  background: rgba(99, 102, 241, 0.14);
+  border-color: rgba(99, 102, 241, 0.4);
+  color: var(--admin-primary);
+}
+
+/* unused old classes — keep empty to avoid errors */
+.inventory-card-priority-bar,
+.inventory-card-main,
+.inventory-card-actions,
+.inventory-card-meta,
+.inventory-badge,
+.inventory-assignee,
+.inventory-due,
+.inventory-desc,
+.inventory-overdue-badge,
+.inventory-status-icon {
+  display: none;
+}
+
+/* ── Modals ── */
+.inventory-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.inventory-modal {
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: calc(var(--admin-radius) + 4px);
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  animation: modalIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.inventory-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 24px 0;
+  margin-bottom: 20px;
+}
+
+.inventory-modal-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--admin-text);
+}
+
+.detail-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.detail-header-left h3 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Form ── */
+.inventory-form {
+  padding: 0 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.tf-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.tf-group label {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--admin-text-secondary);
+}
+
+.tf-textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.6;
+}
+
+.tf-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+/* Priority selector */
+.priority-selector {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.priority-btn {
+  padding: 7px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--admin-border);
+  background: transparent;
+  color: var(--admin-text-secondary);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.priority-btn:hover {
+  background: var(--p-bg);
+  color: var(--p-color);
+  border-color: var(--p-color);
+}
+
+.priority-btn.active {
+  background: var(--p-bg);
+  color: var(--p-color);
+  border-color: var(--p-color);
+}
+
+.tf-actions {
+  display: flex;
+  gap: 10px;
+  padding-top: 4px;
+  border-top: 1px solid var(--admin-border);
+}
+
+.tf-actions .admin-btn-primary {
+  flex: 1;
+}
+
+/* ── Detail Modal ── */
+.detail-modal {
+  max-width: 480px;
+}
+
+.detail-body {
+  padding: 0 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.detail-desc {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--admin-text-secondary);
+  line-height: 1.7;
+  padding: 14px;
+  background: var(--admin-bg);
+  border-radius: var(--admin-radius);
+  border: 1px solid var(--admin-border);
+}
+
+.detail-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.detail-info-item {
+  background: var(--admin-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detail-status-row {
+  padding: 14px;
+  background: var(--admin-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+}
+
+.detail-status-btns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.status-change-btn {
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--admin-border);
+  background: transparent;
+  color: var(--admin-text-secondary);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.status-change-btn:hover {
+  background: var(--s-bg);
+  color: var(--s-color);
+  border-color: var(--s-color);
+}
+
+.status-change-btn.active {
+  background: var(--s-bg);
+  color: var(--s-color);
+  border-color: var(--s-color);
+}
+
+.detail-actions {
+  padding-top: 4px;
+  border-top: 1px solid var(--admin-border);
+}
+
+.text-danger {
+  color: #ef4444 !important;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .inventory-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .inventory-list {
+    grid-template-columns: 1fr;
+  }
+
+  .inventory-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .inventory-create-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .inventory-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .inventory-search {
+    min-width: unset;
+  }
+
+  .tf-row {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Custom Footer Select and Action */
+.inventory-card-select {
+  padding: 6px 12px;
+  background: var(--admin-bg, #1a1b1e);
+  border: 1px solid var(--admin-border, #2d3036);
+  border-radius: 8px;
+  color: var(--admin-text, #ffffff);
+  font-family: 'Vazirmatn', inherit;
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+  font-family: 'Vazirmatn' !important;
+}
+
+.inventory-card-select:focus {
+  border-color: var(--admin-primary, #6366f1);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.inventory-card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.inventory-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--admin-text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.inventory-action-btn:hover {
+  background: var(--admin-card);
+  border-color: var(--admin-border);
+  color: var(--admin-text);
+}
+
+.inventory-action-btn.delete:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+/* ── Archive Toggle ── */
+.archive-toggle {
+  display: flex;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 20px;
+}
+.at-btn {
+  flex: 1;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  color: var(--admin-text-secondary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.at-btn:hover {
+  color: var(--admin-text);
+}
+.at-btn.active {
+  background: var(--admin-primary);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}

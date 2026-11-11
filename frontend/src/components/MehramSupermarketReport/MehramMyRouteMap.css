@@ -1,0 +1,22 @@
+.mrm { display: flex; flex-direction: column; gap: 8px; }
+.mrm-map { position: relative; height: 280px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(128, 128, 128, 0.35); isolation: isolate; }
+.mrm-empty { padding: 14px; border-radius: 12px; text-align: center; font-size: 0.78rem; opacity: 0.75; background: rgba(128, 128, 128, 0.12); }
+.mrm-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; font-size: 0.72rem; font-weight: 700; }
+.mrm-legend { display: inline-flex; align-items: center; gap: 5px; }
+.mrm-legend i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25); }
+.mrm-legend i.done { background: #16a34a; }
+.mrm-legend i.next { background: #f59e0b; }
+.mrm-legend i.todo { background: #2563eb; }
+.mrm-miss { opacity: 0.7; }
+.mrm-go { margin-inline-start: auto; display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 999px; text-decoration: none; font-weight: 800; color: #fff; background: linear-gradient(135deg, #2563eb, #1d4ed8); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35); }
+
+/* numbered stops: bold white-ringed discs */
+.mrm-pin span { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; border: 3px solid #fff; color: #fff; font: 800 14px/1 inherit; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45); background: #2563eb; }
+.mrm-pin--done span { background: #16a34a; }
+.mrm-pin--next span { background: #f59e0b; width: 38px; height: 38px; margin: -2px; animation: mrm-blink 1.15s ease-in-out infinite; }
+@keyframes mrm-blink {
+  0%   { transform: scale(1);    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.85), 0 2px 8px rgba(0, 0, 0, 0.45); }
+  50%  { transform: scale(1.12); box-shadow: 0 0 0 14px rgba(245, 158, 11, 0), 0 2px 8px rgba(0, 0, 0, 0.45); }
+  100% { transform: scale(1);    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0), 0 2px 8px rgba(0, 0, 0, 0.45); }
+}
+@media (prefers-reduced-motion: reduce) { .mrm-pin--next span { animation: none; outline: 4px solid rgba(245, 158, 11, 0.5); } }

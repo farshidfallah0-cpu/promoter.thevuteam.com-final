@@ -1,0 +1,35 @@
+[
+  {
+    "type": "gps",
+    "title": "ثبت موقعیت مکانی (Check-in)",
+    "required": true,
+    "id": "section-1784580403973-0"
+  },
+  {
+    "type": "photos",
+    "title": "تصاویر استند و چیدمان",
+    "required": true,
+    "description": "لطفاً از زوایای مختلف استند عکس بگیرید.",
+    "id": "section-1784580403973-1"
+  },
+  {
+    "type": "inventory",
+    "title": "گزارش موجودی و سمپل‌ها",
+    "required": false,
+    "description": "تعداد سمپل‌های توزیع شده امروز چقدر بود؟",
+    "id": "section-1784580403973-2"
+  },
+  {
+    "type": "feedback",
+    "title": "بازخورد مشتریان",
+    "required": false,
+    "description": "نظرات جالب یا شکایات مشتریان را بنویسید.",
+    "id": "section-1784580403973-3"
+  },
+  {
+    "type": "notes",
+    "title": "توضیحات و گزارش کلی",
+    "required": true,
+    "id": "section-1784580403973-4"
+  }
+]

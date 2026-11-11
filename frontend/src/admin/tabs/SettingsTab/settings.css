@@ -1,0 +1,30 @@
+/* ==================== */
+/* Settings */
+/* ==================== */
+.admin-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+}
+
+.settings-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  font-size: 14px;
+  color: var(--admin-text-secondary);
+}
+
+.settings-value {
+  font-weight: 500;
+  color: var(--admin-text-muted);
+}
+
+.settings-value.online {
+  color: var(--admin-success);
+}

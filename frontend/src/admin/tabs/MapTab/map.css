@@ -1,0 +1,931 @@
+/* ==================== */
+/* Map Container */
+/* ==================== */
+.live-map-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+}
+
+.leaflet-container {
+  z-index: 0 !important;
+}
+
+.map-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.map-title-area h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  color: #cbd5e1 !important;
+}
+
+.map-title-area p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--admin-text-secondary);
+}
+
+.map-stats-bar {
+  display: flex;
+  gap: 16px;
+}
+
+.stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--admin-radius);
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  font-size: 12px;
+  cursor: pointer;
+  transition: var(--admin-transition);
+}
+
+.stat-chip:hover,
+.stat-chip.active {
+  background: var(--admin-card-hover);
+  border-color: var(--admin-primary);
+}
+
+.chip-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.stat-chip.online .chip-dot {
+  background: var(--admin-success);
+}
+
+.stat-chip.away .chip-dot {
+  background: var(--admin-warning);
+}
+
+.stat-chip.offline .chip-dot {
+  background: #6b7280;
+}
+
+.chip-count {
+  font-weight: 700;
+  color: var(--admin-text);
+}
+
+.chip-label {
+  color: var(--admin-text-secondary);
+}
+
+.map-wrapper {
+  position: relative;
+  height: 500px;
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  overflow: hidden;
+}
+
+.map-placeholder {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+
+.map-grid {
+  position: absolute;
+  inset: 0;
+}
+
+.map-marker {
+  position: absolute;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.marker-pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  animation: marker-pulse 2s ease-out infinite;
+}
+
+.map-marker.online .marker-pulse {
+  background: rgba(16, 185, 129, 0.3);
+}
+
+.map-marker.away .marker-pulse {
+  background: rgba(245, 158, 11, 0.3);
+}
+
+.map-marker.offline .marker-pulse {
+  background: transparent;
+  animation: none;
+}
+
+@keyframes marker-pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.6);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(-50%, -50%) scale(1.8);
+    opacity: 0;
+  }
+}
+
+.marker-dot {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 13px;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.map-marker.online .marker-dot {
+  background: var(--admin-success);
+}
+
+.map-marker.away .marker-dot {
+  background: var(--admin-warning);
+}
+
+.map-marker.offline .marker-dot {
+  background: #6b7280;
+}
+
+.marker-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 14px;
+  background: var(--admin-bg-secondary);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  opacity: 0;
+  visibility: hidden;
+  transition: var(--admin-transition);
+  white-space: nowrap;
+  z-index: 100;
+}
+
+.map-marker:hover .marker-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+.marker-tooltip strong {
+  font-size: 13px;
+  color: var(--admin-text);
+}
+
+.marker-tooltip span {
+  font-size: 11px;
+  color: var(--admin-text-muted);
+}
+
+.marker-time {
+  color: var(--admin-success) !important;
+}
+
+.map-overlay {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 20px;
+  background: rgba(10, 10, 15, 0.9);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  text-align: center;
+}
+
+.map-overlay span {
+  font-size: 13px;
+  color: #ffffff !important;
+}
+
+.map-overlay small {
+  display: block;
+  font-size: 10px;
+  color: #cbd5e1 !important;
+  margin-top: 4px;
+}
+
+.map-info-overlay {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  padding: 8px 12px;
+  border-radius: var(--admin-radius);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 400;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.map-info-overlay span {
+  color: #ffffff !important;
+}
+
+/* Custom Leaflet Marker */
+.custom-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.marker-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.marker-pulse-effect {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  animation: marker-pulse 2s ease-out infinite;
+}
+
+.marker-container.online .marker-pulse-effect {
+  background: rgba(16, 185, 129, 0.4);
+}
+
+.marker-container.away .marker-pulse-effect {
+  background: rgba(245, 158, 11, 0.4);
+}
+
+.marker-container.offline .marker-pulse-effect {
+  background: transparent;
+  animation: none;
+}
+
+.marker-dot-inner {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.marker-container.online .marker-dot-inner {
+  background: var(--admin-success);
+}
+
+.marker-container.away .marker-dot-inner {
+  background: var(--admin-warning);
+}
+
+.marker-container.offline .marker-dot-inner {
+  background: #6b7280;
+}
+
+/* Custom Leaflet Popup */
+.leaflet-popup-content-wrapper {
+  background: var(--admin-card) !important;
+  color: var(--admin-text) !important;
+  border: 1px solid var(--admin-border) !important;
+  border-radius: var(--admin-radius-lg) !important;
+  padding: 0 !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+}
+
+.leaflet-popup-tip {
+  background: var(--admin-card) !important;
+  border: 1px solid var(--admin-border) !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  min-width: 220px;
+}
+
+.popup-content {
+  padding: 16px;
+}
+
+.popup-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.popup-avatar {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--admin-primary), var(--admin-primary-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.popup-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.popup-status-dot {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--admin-card);
+}
+
+.popup-status-dot.online {
+  background: var(--admin-success);
+}
+
+.popup-status-dot.away {
+  background: var(--admin-warning);
+}
+
+.popup-status-dot.offline {
+  background: #6b7280;
+}
+
+.leaflet-control-attribution {
+  background: rgba(0, 0, 0, 0.5) !important;
+  color: #e2e8f0 !important;
+}
+
+.leaflet-control-attribution a {
+  color: #93c5fd !important;
+}
+
+.popup-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.popup-info strong {
+  font-size: 14px;
+  color: var(--admin-text);
+}
+
+.popup-team {
+  font-size: 12px;
+  color: var(--admin-text-muted);
+}
+
+.popup-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.popup-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--admin-text-secondary);
+}
+
+.detail-icon {
+  font-size: 14px;
+}
+
+.popup-status-badge {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px;
+  border-radius: var(--admin-radius);
+}
+
+.popup-status-badge.online {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--admin-success);
+}
+
+.popup-status-badge.away {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--admin-warning);
+}
+
+.popup-status-badge.offline {
+  background: rgba(107, 114, 128, 0.1);
+  color: #9ca3af;
+}
+
+/* Promoters List Section */
+.promoters-list-section {
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  padding: 24px;
+}
+
+.promoters-list-section h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 20px 0;
+}
+
+.promoters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.promoter-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--admin-radius);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.promoter-card:hover,
+.promoter-card.selected {
+  background: var(--admin-bg);
+  border-color: var(--admin-primary);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2), 0 0 0 1px var(--admin-primary) inset;
+  transform: translateY(-2px);
+}
+
+.promoter-avatar {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--admin-primary), var(--admin-primary-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.promoter-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.promoter-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.promoter-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--admin-text);
+}
+
+.promoter-team {
+  font-size: 12px;
+  color: var(--admin-text-muted);
+}
+
+.promoter-location {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.location-city {
+  font-size: 11px;
+  color: var(--admin-text-secondary);
+}
+
+.location-time {
+  font-size: 11px;
+  color: var(--admin-text-muted);
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.status-badge.online {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--admin-success);
+}
+
+.status-badge.away {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--admin-warning);
+}
+
+.status-badge.offline {
+  background: rgba(107, 114, 128, 0.1);
+  color: #9ca3af;
+}
+
+/* Promoters List Section */
+.promoters-list-section {
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-lg);
+  padding: 20px;
+}
+
+.promoters-list-section h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  color: var(--admin-text);
+}
+
+.empty-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px;
+  color: var(--admin-text-muted);
+}
+
+.empty-list span {
+  font-size: 40px;
+  opacity: 0.5;
+}
+
+.promoters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.promoter-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--admin-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  cursor: pointer;
+  transition: var(--admin-transition);
+}
+
+.promoter-card:hover {
+  background: var(--admin-card-hover);
+  transform: translateY(-2px);
+}
+
+.promoter-card.selected {
+  border-color: var(--admin-primary);
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.promoter-card.online {
+  border-right: 3px solid var(--admin-success);
+}
+
+.promoter-card.away {
+  border-right: 3px solid var(--admin-warning);
+}
+
+.promoter-card.offline {
+  border-right: 3px solid #6b7280;
+  opacity: 0.7;
+}
+
+.promoter-avatar {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+  color: white;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.promoter-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.promoter-avatar .status-indicator {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--admin-bg);
+}
+
+.status-indicator.online {
+  background: var(--admin-success);
+}
+
+.status-indicator.away {
+  background: var(--admin-warning);
+}
+
+.status-indicator.offline {
+  background: #6b7280;
+}
+
+.promoter-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.promoter-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--admin-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.promoter-team {
+  font-size: 11px;
+  color: var(--admin-text-muted);
+}
+
+.promoter-location {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.location-city {
+  font-size: 11px;
+  color: var(--admin-text-secondary);
+}
+
+.location-time {
+  font-size: 10px;
+  color: var(--admin-text-muted);
+}
+
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-badge.online {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--admin-success);
+}
+
+.status-badge.away {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--admin-warning);
+}
+
+.status-badge.offline {
+  background: rgba(107, 114, 128, 0.15);
+  color: #9ca3af;
+}
+
+/* Responsive map */
+@media (max-width: 768px) {
+  .map-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .map-stats-bar {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .stat-chip {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .map-wrapper {
+    height: 400px;
+  }
+}
+
+/* ── BVT distribution markers ── */
+/* Flat, minimal — one dot per distribution point instead of the old heavy
+   pink gradient + thick shadow. Brand teal (same #0ea5e9 as the "خروجی PDF
+   BVT" button) keeps it visually tied to the feature without shouting. */
+.bvt-point-marker {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #0ea5e9;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(14, 165, 233, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  line-height: 1;
+}
+
+.bvt-focus-marker {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bvt-focus-marker span {
+  position: relative;
+  z-index: 1;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #0ea5e9;
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(14, 165, 233, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+
+.bvt-focus-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgba(14, 165, 233, 0.25);
+  animation: marker-pulse 1.6s ease-out infinite;
+}
+
+/* Cluster marker — several distributions within ~20m of each other. A
+   slightly deeper shade of the same teal, not a different color family, so
+   it still reads as "the same kind of pin, just more of them". */
+.bvt-cluster-marker {
+  width: auto;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 11px;
+  background: #0284c7;
+  border: 2px solid white;
+  box-shadow: 0 1px 5px rgba(2, 132, 199, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  font-weight: 700;
+  font-size: 11px;
+  color: white;
+}
+
+/* Cluster popup — scrollable breakdown of everything dropped at this spot */
+/* The page is RTL, and a scrollable box's own scrollbar follows that to the
+   left by default — forcing `ltr` here alone pins it back to the right,
+   with `rtl` restored on each row so the text inside still reads correctly. */
+.bvt-cluster-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: 200px;
+  overflow-y: auto;
+  direction: ltr;
+  padding: 0 6px 0 0;
+  margin-top: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: #0ea5e9 transparent;
+}
+
+.bvt-cluster-list .bvt-cluster-row {
+  direction: rtl;
+}
+
+.bvt-cluster-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.bvt-cluster-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.bvt-cluster-list::-webkit-scrollbar-thumb {
+  background: #0ea5e9;
+  border-radius: 999px;
+  opacity: 0.5;
+}
+
+.bvt-cluster-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 9px;
+  border-radius: 9px;
+  background: rgba(14, 165, 233, 0.06);
+  border: 1px solid rgba(14, 165, 233, 0.16);
+}
+
+.bvt-cluster-row-main {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--admin-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bvt-cluster-row-time {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--admin-text-muted);
+}
+
+.bvt-cluster-manual-tag {
+  flex-shrink: 0;
+  font-size: 9px;
+  font-weight: 800;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 999px;
+  padding: 1px 6px;
+}
+
+/* ── BVT distribution count badge on promoter list cards ── */
+.bvt-count-badge {
+  flex-shrink: 0;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #ec4899;
+  background: rgba(236, 72, 153, 0.12);
+  border: 1px solid rgba(236, 72, 153, 0.25);
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
