@@ -5,6 +5,7 @@ import './index.css';
 import App from './App.jsx';
 import './App.css';
 import { BrowserRouter } from 'react-router-dom';
+import { startVersionWatch } from './versionCheck';
 
 // Without this, a slow/stuck backend request (e.g. one waiting on a database
 // lock) just hangs forever in the browser — no error, no toast, the events
@@ -13,6 +14,8 @@ import { BrowserRouter } from 'react-router-dom';
 // the request did go out. A timeout turns that into a visible, catchable
 // error instead of an indefinite hang.
 axios.defaults.timeout = 20000;
+
+startVersionWatch();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

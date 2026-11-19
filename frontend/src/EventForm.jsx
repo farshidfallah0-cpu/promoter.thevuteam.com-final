@@ -1,4 +1,5 @@
 import PageLoader from './components/PageLoader';
+import { uploadInChunks } from './utils/chunkedUpload';
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Search, FileText, CheckCircle2, ShieldCheck, StickyNote, PhoneCall, Phone, UserCheck, Package, UploadCloud, MapPin, Grid, Camera, Users, LogOut, CheckSquare, Plus, Edit2, Download, Trash2, Calendar, Layout, Lock, Settings, ChevronLeft, CalendarDays, Maximize2, Mic, Settings2, MessageSquare, Cloud, X, User, Minus } from 'lucide-react';
@@ -234,6 +235,9 @@ const SamplingCounterField = ({ field, value, onChange, eventSlug, userRole }) =
     </div>
   );
 };
+
+// Compressed copy of each picked photo (same File object → same bytes → resumable upload).
+const compressedFiles = new WeakMap();
 
 export default function EventForm() {
   const { slug } = useParams();
@@ -499,6 +503,24 @@ export default function EventForm() {
           delete parsedDraft._flags;
         }
         Object.assign(next, parsedDraft);
+        // A local draft that lags behind the server (another device, a failed sync, a cleared tab) must not wipe the
+        // supermarket reports the server already has: unite both lists per store (newest wins), minus deleted ids.
+        {
+          const serverData = serverDataIsToday && data && data.data ? data.data : {};
+          const tomb = new Set([...(serverData._deleted_reports || []), ...(parsedDraft._deleted_reports || [])].map(String));
+          const keys = new Set([...Object.keys(serverData), ...Object.keys(parsedDraft)].filter((k) => k.endsWith('_reports')));
+          keys.forEach((k) => {
+            const byStore = new Map();
+            [...(Array.isArray(parsedDraft[k]) ? parsedDraft[k] : []), ...(Array.isArray(serverData[k]) ? serverData[k] : [])].forEach((r) => {
+              if (!r || typeof r !== 'object' || !r.storeId || tomb.has(String(r.id))) return;
+              const cur = byStore.get(String(r.storeId));
+              if (!cur || (r.submittedAt || 0) > (cur.submittedAt || 0)) byStore.set(String(r.storeId), r);
+            });
+            next[k] = [...byStore.values()];
+            next[k.slice(0, -'_reports'.length)] = next[k].length;
+          });
+          if (tomb.size) next._deleted_reports = [...tomb];
+        }
         // The draft may hold changes whose sync never reached the server (app
         // closed while offline) — resend the merged snapshot once loaded.
         if (Object.keys(parsedDraft).length > 0) draftResyncRef.current = next;
@@ -656,8 +678,8 @@ export default function EventForm() {
     }
     return null;
   };
-  const uploadImageFile = async (file, onProgress) => {
-    const compressedFile = await compressImage(file);
+  // Old single-request upload: only used if the server has no chunk API.
+  const legacyUpload = async (compressedFile, onProgress) => {
     const uploadId = newUploadId();
     const sendOnce = () => new Promise((resolve, reject) => {
       const fd = new FormData();
@@ -713,6 +735,25 @@ export default function EventForm() {
       }
     }
     throw lastErr;
+  };
+
+  // Photos go up in small resumable chunks (see utils/chunkedUpload.js). The compressed copy is
+  // cached per picked file, so «تلاش دوباره» re-sends the same bytes under the same upload id
+  // and continues from the chunks the server already has instead of starting over.
+  const uploadImageFile = async (file, onProgress) => {
+    let compressed = compressedFiles.get(file);
+    if (!compressed) {
+      compressed = await compressImage(file);
+      compressedFiles.set(file, compressed);
+    }
+    try {
+      return await uploadInChunks({ apiUrl: API_URL, token, file: compressed, onProgress });
+    } catch (err) {
+      if (err.unsupported) return legacyUpload(compressed, onProgress);
+      if (err.status === 413) throw Object.assign(new Error('حجم عکس بیش از حد مجاز است'), { final: true });
+      if (err.status === 401) throw Object.assign(new Error('نشست شما منقضی شده؛ دوباره وارد شوید'), { final: true });
+      throw new Error('اینترنت ضعیف است — بخش‌های ارسال‌شده‌ی عکس ذخیره شده‌اند؛ «تلاش دوباره» را بزنید تا از همان‌جا ادامه پیدا کند');
+    }
   };
 
   // Files are uploaded strictly one at a time (not in parallel) — this is what keeps
@@ -996,6 +1037,7 @@ export default function EventForm() {
           <MehramSupermarketReport
             field={f}
             reports={formData[`${f.id}_reports`] || []}
+            deletedIds={formData._deleted_reports || []}
             calls={formData[`${f.id}_calls`] || {}}
             onChange={handleChange}
             uploadImage={uploadImageFile}

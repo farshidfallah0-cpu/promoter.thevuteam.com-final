@@ -295,7 +295,7 @@ const PlanRow = ({ s, n, total, done, onPick, onMove, busy, children }) => {
  * holds the count. `uploadImage(file, onProgress)` must resolve to a public URL.
  */
 // `hideSelfie`: a view-only account of the client (they see the form, not the storefront selfie step).
-const MehramSupermarketReport = ({ field, reports, calls, onChange, uploadImage, token, hideSelfie = false }) => {
+const MehramSupermarketReport = ({ field, reports, calls, onChange, uploadImage, token, hideSelfie = false, deletedIds = [] }) => {
   const cities = [...new Set((field?.mehramCities?.length ? field.mehramCities : MEHRAM_CITIES).map(normCity))];
   const allStores = field?.mehramStores?.length ? field.mehramStores : MEHRAM_STORES.filter((s) => isStoreActiveInWeek(s, weekStart(Date.now())));
   const questions = getShelfQuestions(field);
@@ -624,6 +624,8 @@ const MehramSupermarketReport = ({ field, reports, calls, onChange, uploadImage,
   const deleteSaved = (r) => {
     if (!window.confirm(`گزارش «${r.storeName}» حذف شود؟`)) return;
     persist(saved.filter((x) => x.id !== r.id));
+    // Tombstone: the server unites report lists, so a deliberate delete has to be announced or it would come back.
+    onChange('_deleted_reports', [...new Set([...deletedIds, r.id].map(String))]);
   };
 
   const answered = questions.length - missingAnswers.length;

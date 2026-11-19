@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { reloadIfStale } from "./versionCheck";
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import axios from "axios";
 import PageLoader from "./components/PageLoader";
@@ -32,6 +33,13 @@ function App() {
   const onAdminRoute = isAdminRoute(location.pathname);
   const [token, setToken] = useState(localStorage.getItem('token') || '');
   const [user, setUser] = useState(null);
+
+  // A deploy happened while this tab was open: load the page being navigated to from the new build.
+  const firstRouteRef = useRef(true);
+  useEffect(() => {
+    if (firstRouteRef.current) { firstRouteRef.current = false; return; }
+    reloadIfStale(location.pathname + location.search);
+  }, [location.pathname, location.search]);
 
   // index.html's manifest-switcher only runs once, on the very first full
   // page load — it has no way to react to client-side (SPA) navigation. Most

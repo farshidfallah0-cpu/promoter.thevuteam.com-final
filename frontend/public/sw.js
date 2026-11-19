@@ -10,7 +10,7 @@
 // bytes, which is what makes the browser detect an update, install the new SW,
 // and (via 'activate' below) throw away the old cache instead of quietly
 // keeping stale icons around forever.
-const CACHE_VERSION = 'vu-pwa-v9';
+const CACHE_VERSION = 'vu-pwa-v10';
 const PRECACHE_URLS = [
   // Promoter app (also used by the admin manifest — both apps share this artwork)
   '/manifest.json',
@@ -70,15 +70,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Network-first for everything else; fall back gracefully on error
-  event.respondWith(
-    fetch(event.request).catch(() => {
-      // If network fails, try cache as fallback
-      return caches.match(event.request, { ignoreSearch: true }).then((cached) => {
-        if (cached) return cached;
-        // If nothing matches, we must return a Response object to avoid crashing the fetch handler
-        return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
-      });
-    })
-  );
+  // Everything else (pages, JS, API) goes straight to the network untouched. The old
+  // network-first handler answered failed page loads with a fake "Offline 503" and could
+  // serve a stale page after a deploy; nginx headers now decide what gets cached.
 });

@@ -22,6 +22,7 @@ import { resolveEffectiveRole } from '../../../utils/roleUtils';
 import { calcGlobalProgress } from '../../../utils/progressUtils';
 import { MapContainer, TileLayer, Marker, Polyline, Circle } from 'react-leaflet';
 import L from 'leaflet';
+import { useEventWorkdays, WorkdayApproveStrip } from '../../payroll/WorkdayApprove';
 import 'leaflet/dist/leaflet.css';
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
@@ -444,7 +445,16 @@ const preloadReportFonts = async () => {
   } catch { /* best-effort — capture proceeds with whatever loaded */ }
 };
 
-export const ReportsTab = ({ selectedEvent, submissions, token, formatAmount, users, onGoToMapPoint, requiresApproval = false, canApprove = false, onApprovalChange, clientView = false, onRefresh, refreshing = false, updatedAt = null, canDelete = false }) => {
+export const ReportsTab = ({ selectedEvent, submissions, token, formatAmount, users, onGoToMapPoint, requiresApproval = false, canApprove = false, onApprovalChange, clientView = false, onRefresh, refreshing = false, updatedAt = null, canDelete = false, canPayroll = false }) => {
+  // Payroll: «تایید عملکرد روز کاری» — only the event managers, never a client account.
+  const payrollOn = canPayroll && !clientView;
+  const workdays = useEventWorkdays(token, selectedEvent?.id, payrollOn);
+  // A card's id is `${promoter_id}_${YYYY-MM-DD}` (Tehran day): exactly one workday.
+  const workdayOf = (s) => {
+    if (!s?.promoter_id || !s.id) return null;
+    const day = String(s.id).slice(String(s.promoter_id).length + 1);
+    return /^\d{4}-\d{2}-\d{2}$/.test(day) ? { key: s.id, day } : null;
+  };
   const [filterDateRange, setFilterDateRange] = useState('all');
   const [filterPromoter, setFilterPromoter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -2778,6 +2788,18 @@ export const ReportsTab = ({ selectedEvent, submissions, token, formatAmount, us
         </div>
       )}
 
+      {payrollOn && viewMode !== 'table' && (() => {
+        const open = filteredSubmissions.map((s) => ({ s, wd: workdayOf(s) })).filter(({ wd }) => wd && !workdays.map[wd.key]);
+        return open.length > 1 && (
+          <div className="wd-bulk">
+            <span>💰 <b>{open.length.toLocaleString('fa-IR')}</b> روز کاری نمایش‌داده‌شده هنوز برای محاسبه عملکرد تایید نشده است</span>
+            <button type="button" className="wd-approve" onClick={() => window.confirm(`${open.length.toLocaleString('fa-IR')} روز کاری تایید و به محاسبه عملکرد فرستاده شود؟`) && workdays.approve(open.map(({ s, wd }) => ({ event_id: selectedEvent.id, promoter_id: s.promoter_id, day: wd.day, role: getPromoterRole(s) })))}>
+              تایید همه‌ی روزهای کاری نمایش‌داده‌شده
+            </button>
+          </div>
+        );
+      })()}
+
       {/* ── SUBMISSIONS FEED ── */}
       {filteredSubmissions.length === 0 ? (
         <div className="reports-empty-card">
@@ -2866,6 +2888,20 @@ export const ReportsTab = ({ selectedEvent, submissions, token, formatAmount, us
                 </div>
 
                 {renderApprovalStrip(s)}
+
+                {payrollOn && (() => {
+                  const wd = workdayOf(s);
+                  if (!wd) return null;
+                  return (
+                    <WorkdayApproveStrip
+                      workday={workdays.map[wd.key]}
+                      busy={!!workdays.busy[wd.key]}
+                      role={getPromoterRole(s)}
+                      onApprove={() => workdays.approve([{ event_id: selectedEvent.id, promoter_id: s.promoter_id, day: wd.day, role: getPromoterRole(s) }])}
+                      onUnapprove={workdays.unapprove}
+                    />
+                  );
+                })()}
 
                 {/* Today's completion — same metric as the promoter's own hero progress bar */}
                 {progress.total > 0 && (

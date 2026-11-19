@@ -2157,3 +2157,212 @@ html:has(.admin-container) {
 
 /* Client-scoped accounts (mahram-admin) don't see the executive calendar. */
 .admin-scoped-client .ecb-root { display: none; }
+
+/* ── Events list (gateway): wider page, every action visible without sideways scrolling, cleaner rows ── */
+.gw-main { max-width: min(1640px, 100%); }
+.gw-name-cell { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.gw-name-text { display: flex; flex-direction: column; font-size: 15px; font-weight: 700; color: #f1f5f9; }
+.gw-name-text small { font-size: 11.5px; font-weight: 500; color: #7c8394; direction: ltr; text-align: right; margin-top: 3px; }
+.gw-date-days { display: block; font-size: 11px; color: #7c8394; margin-top: 4px; }
+.gw-icon-group { display: inline-flex; align-items: center; gap: 2px; }
+@media (min-width: 769px) {
+  .gw-table-wrap {
+    overflow-x: visible;
+    border-radius: 22px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012));
+    box-shadow: 0 24px 60px -36px rgba(0, 0, 0, 0.9);
+  }
+  .gw-table { font-size: 14px; }
+  .gw-table th { padding: 16px 14px; font-size: 12px; letter-spacing: 0; color: #9ca3af; text-transform: none; }
+  .gw-table td { padding: 14px; }
+  .gw-table-row:hover { background: rgba(99, 102, 241, 0.07); }
+  .gw-table-row:hover td:first-child { box-shadow: inset -3px 0 0 #818cf8; }
+  .gw-td-name { display: table-cell !important; text-align: right !important; }
+  .gw-td-action-group { width: 1%; text-align: left; }
+  .gw-td-action-group > * + * { margin-inline-start: 10px; }
+  .gw-icon-group { padding: 3px; border-radius: 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); }
+  .gw-icon-group > button { width: 34px; height: 34px; border-color: transparent; background: transparent; }
+  .gw-icon-group > button:hover { border-color: transparent; }
+  .gw-icon-group > * + * { margin: 0; }
+  .gw-open-btn { padding: 8px 16px; font-size: 13px; border-radius: 11px; }
+}
+.gw-price-review {
+  align-self: flex-start; margin-top: 6px;
+  font-size: 10.5px; font-weight: 700; color: #fbbf24;
+  background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 999px; padding: 1px 8px;
+}
+
+/* «گزارش ایونت» button in the events list */
+.gw-report-btn {
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; flex-shrink: 0; cursor: pointer;
+  background: rgba(245, 193, 24, 0.1); border: 1px solid rgba(245, 193, 24, 0.28);
+  border-radius: 9px; color: #f5c118; transition: all 0.15s;
+}
+.gw-report-btn:hover { background: rgba(245, 193, 24, 0.2); border-color: rgba(245, 193, 24, 0.5); }
+.gw-report-btn svg { width: 14px; height: 14px; }
+.gw-report-btn.is-done { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); color: #34d399; }
+.gw-report-dot {
+  position: absolute; top: -3px; left: -3px; width: 9px; height: 9px; border-radius: 50%;
+  background: #10b981; box-shadow: 0 0 0 2px #15151d;
+}
+
+/* ── Event row actions: fixed 6-slot RTL strip + tooltips ───────────────────────────── */
+.gw-icon-group {
+  --act: 34px;
+  display: inline-grid; grid-auto-flow: column; grid-auto-columns: var(--act);
+  direction: rtl; align-items: center; justify-items: center; gap: 3px;
+  padding: 4px; border-radius: 14px; vertical-align: middle;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025));
+  border: 1px solid rgba(255,255,255,0.09);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.gw-act-empty { width: var(--act); height: var(--act); }
+.gw-act {
+  --c: 148, 163, 184;
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  width: var(--act); height: var(--act); padding: 0; margin: 0; cursor: pointer; text-decoration: none;
+  color: rgb(var(--c)); background: transparent; border: 1px solid transparent; border-radius: 10px;
+  transition: transform .16s ease, background .16s ease, color .16s ease, box-shadow .16s ease;
+}
+.gw-act svg { width: 16px; height: 16px; transition: transform .2s ease; }
+.gw-act:hover, .gw-act:focus-visible {
+  background: rgba(var(--c), 0.16); box-shadow: 0 0 0 1px rgba(var(--c), 0.35), 0 6px 16px -6px rgba(var(--c), 0.55);
+  transform: translateY(-1px); outline: none;
+}
+.gw-act:active { transform: translateY(0) scale(.94); }
+.gw-act--report { --c: 245, 193, 24; }
+.gw-act--report.is-done, .gw-act--sheet.is-done { --c: 52, 211, 153; }
+.gw-act--sheet { --c: 52, 211, 153; }
+.gw-act--reload { --c: 148, 163, 184; }
+.gw-act--reload:hover svg { transform: rotate(180deg); }
+.gw-act--edit { --c: 96, 165, 250; }
+.gw-act--archive { --c: 245, 158, 11; }
+.gw-act--delete { --c: 248, 113, 113; }
+.gw-act.has-warn { --c: 245, 158, 11; }
+.gw-act:disabled { cursor: progress; opacity: .75; pointer-events: none; }
+.gw-act.is-busy svg { animation: gw-act-spin .9s linear infinite; }
+.gw-act-dot {
+  position: absolute; top: 3px; inset-inline-start: 3px; width: 8px; height: 8px; border-radius: 50%;
+  background: #10b981; box-shadow: 0 0 0 2px #1b1b24;
+}
+.gw-act-dot--warn { background: #f59e0b; }
+@keyframes gw-act-spin { to { transform: rotate(360deg); } }
+
+/* Tooltip (desktop / mouse only) */
+@media (hover: hover) {
+  .gw-act[data-tip]::before, .gw-act[data-tip]::after {
+    position: absolute; left: 50%; pointer-events: none; opacity: 0; visibility: hidden;
+    transition: opacity .14s ease .25s, transform .14s ease .25s, visibility 0s linear .25s; z-index: 60;
+  }
+  .gw-act[data-tip]::after {
+    content: attr(data-tip) "\A" attr(data-tip-sub);
+    white-space: pre; direction: rtl; text-align: right; bottom: calc(100% + 11px);
+    transform: translate(-50%, 4px);
+    padding: 7px 11px; border-radius: 10px; min-width: 96px;
+    font: 700 12px/1.55 'Vazirmatn', sans-serif; color: #f8fafc;
+    background: rgba(15, 17, 26, 0.97); border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 14px 32px -10px rgba(0,0,0,.85), 0 0 0 1px rgba(0,0,0,.4);
+  }
+  .gw-act[data-tip]:not([data-tip-sub])::after { content: attr(data-tip); }
+  .gw-act[data-tip]::before {
+    content: ""; bottom: calc(100% + 5px); width: 9px; height: 9px; transform: translate(-50%, 4px) rotate(45deg);
+    background: rgba(15, 17, 26, 0.97); border-right: 1px solid rgba(255,255,255,0.12); border-bottom: 1px solid rgba(255,255,255,0.12);
+  }
+  .gw-act[data-tip-kind="error"]::after { border-color: rgba(248,113,113,.45); }
+  .gw-act[data-tip-kind="error"]::before { border-color: rgba(248,113,113,.45); }
+  .gw-act:hover::before, .gw-act:hover::after, .gw-act:focus-visible::before, .gw-act:focus-visible::after {
+    opacity: 1; visibility: visible; transform: translate(-50%, 0); transition-delay: .25s, .25s, 0s;
+  }
+  .gw-act:hover::before, .gw-act:focus-visible::before { transform: translate(-50%, 0) rotate(45deg); }
+  /* leftmost buttons: grow the tooltip rightwards so it never spills out of the page */
+  .gw-act--delete[data-tip]::after { left: 0; transform: translate(0, 4px); }
+  .gw-act--delete:hover::after, .gw-act--delete:focus-visible::after { transform: translate(0, 0); }
+  .gw-act:disabled::before, .gw-act:disabled::after { display: none; }
+}
+
+/* the action cell must always fit the 6-slot strip + the open button */
+@media (min-width: 769px) {
+  .gw-td-action-group { width: 1%; min-width: 250px; text-align: left; }
+  .gw-icon-group { background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025)); }
+  .gw-icon-group > .gw-act { width: var(--act); height: var(--act); border-color: transparent; }
+}
+@media (max-width: 768px) {
+  .gw-icon-group { --act: 38px; margin-inline: auto; }
+}
+
+/* slimmer rows now that the «باز کردن» button is gone (the whole row opens the event) */
+@media (min-width: 769px) {
+  .gw-table-row { cursor: pointer; }
+  .gw-table td { padding-top: 9px; padding-bottom: 9px; }
+}
+
+/* ── Events table: always fits (no scrolling); two separate cards — main data + timer ── */
+.gw-th-spacer, .gw-td-spacer { display: none; }
+@media (min-width: 769px) {
+  .gw-table-wrap { overflow: visible; background: none; border: 0; box-shadow: none; border-radius: 0; }
+  .gw-table--events { table-layout: fixed; width: 100%; border-collapse: separate; border-spacing: 0; }
+  .gw-th-spacer, .gw-td-spacer { display: table-cell; width: 18px; padding: 0 !important; border: 0 !important; background: none !important; }
+  .gw-table--events thead tr { background: none; border: 0; }
+  .gw-table--events .gw-table-row, .gw-table--events .gw-table-row:hover { background: none; border: 0; }
+  .gw-table--events .gw-table-row:hover td:first-child { box-shadow: none; }
+
+  /* card surface on every real cell */
+  .gw-table--events th:not(.gw-th-spacer), .gw-table--events td:not(.gw-td-spacer) {
+    padding: 9px 10px; overflow: visible;
+    background: rgba(255,255,255,0.022);
+    border-bottom: 1px solid rgba(255,255,255,0.045);
+  }
+  .gw-table--events th:not(.gw-th-spacer) { padding: 14px 10px; border-bottom: 1px solid rgba(255,255,255,0.09); background: rgba(255,255,255,0.035); }
+  .gw-table--events tbody tr:hover td:not(.gw-td-spacer) { background: rgba(255,255,255,0.05); }
+
+  /* card outlines: top (header), bottom (last row), start edge, end edge */
+  .gw-table--events thead th:not(.gw-th-spacer) { border-top: 1px solid rgba(255,255,255,0.09); }
+  .gw-table--events tbody tr:last-child td:not(.gw-td-spacer) { border-bottom: 1px solid rgba(255,255,255,0.09); }
+  .gw-table--events th:nth-child(1), .gw-table--events td:nth-child(1),
+  .gw-table--events th.gw-th-timer, .gw-table--events td.gw-td-timer { border-right: 1px solid rgba(255,255,255,0.09); }
+  .gw-table--events th:nth-child(7), .gw-table--events td:nth-child(7),
+  .gw-table--events th.gw-th-timer, .gw-table--events td.gw-td-timer { border-left: 1px solid rgba(255,255,255,0.09); }
+  .gw-table--events th:nth-child(1) { border-top-right-radius: 18px; }
+  .gw-table--events th:nth-child(7) { border-top-left-radius: 18px; }
+  .gw-table--events tbody tr:last-child td:nth-child(1) { border-bottom-right-radius: 18px; }
+  .gw-table--events tbody tr:last-child td:nth-child(7) { border-bottom-left-radius: 18px; }
+  .gw-table--events th.gw-th-timer { border-top-right-radius: 18px; border-top-left-radius: 18px; }
+  .gw-table--events tbody tr:last-child td.gw-td-timer { border-bottom-right-radius: 18px; border-bottom-left-radius: 18px; }
+  .gw-table--events th:nth-child(1), .gw-table--events td:nth-child(1) { width: 44px; padding-inline: 4px; }
+  /* name gets only what is left; the four data columns get proportional room so they never look squeezed */
+  .gw-table--events th:nth-child(3) { width: 12%; }
+  .gw-table--events th:nth-child(4) { width: 10%; }
+  .gw-table--events th:nth-child(5) { width: 10.5%; }
+  .gw-table--events th:nth-child(6) { width: 10.5%; }
+  .gw-table--events th:nth-child(7) { width: 244px; }
+  .gw-table--events th.gw-th-timer { width: 224px; }
+  .gw-table--events .gw-td-name { max-width: 0; } /* fixed layout: name can never push other columns */
+  .gw-table--events .gw-td-action-group { text-align: center; min-width: 0; padding-inline: 8px; }
+  .gw-table--events .gw-icon-group { --act: 32px; max-width: 100%; }
+  .gw-table--events .gw-td-timer { text-align: center; }
+  .gw-table--events .gw-td-name { min-width: 0; }
+  .gw-table--events .gw-name-cell { min-width: 0; flex-wrap: wrap; row-gap: 4px; }
+  .gw-table--events .gw-name-text { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+  .gw-table--events .gw-pending-badge, .gw-table--events .gw-event-icon-wrap { flex-shrink: 0; }
+  .gw-table--events .gw-client-badge { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; }
+}
+@media (min-width: 769px) and (max-width: 1280px) {
+  .gw-table--events th:nth-child(1), .gw-table--events td:nth-child(1) { display: none; }
+  .gw-table--events th:nth-child(2) { border-top-right-radius: 18px; }
+  .gw-table--events tbody tr:last-child td:nth-child(2) { border-bottom-right-radius: 18px; }
+  .gw-table--events th:nth-child(2), .gw-table--events td:nth-child(2) { border-right: 1px solid rgba(255,255,255,0.09); }
+  .gw-table--events th:nth-child(3) { width: 12%; }
+  .gw-table--events th:nth-child(4) { width: 9.5%; }
+  .gw-table--events th:nth-child(5) { width: 10.5%; }
+  .gw-table--events th:nth-child(6) { width: 10.5%; }
+  .gw-table--events th:nth-child(7) { width: 222px; }
+  .gw-table--events th.gw-th-timer { width: 212px; }
+  .evt-box { gap: 4px; }
+  .evt-side { flex-basis: 54px; }
+  .gw-table--events .gw-icon-group { --act: 30px; }
+}
+@media (max-width: 768px) {
+  .gw-td-timer .evt-box { justify-content: center; }
+}

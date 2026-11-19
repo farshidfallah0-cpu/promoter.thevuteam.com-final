@@ -562,7 +562,11 @@ const MehramStoresTab = ({ token, clientView: isClient = false, defaultView = 'c
       && (!filters.promoter || inWeek.some((v) => v.promoterName === filters.promoter) || plan?.personName === filters.promoter)
       && (!filters.day || dayPlansByStore.get(store.id)?.some((p) => p.day === filters.day))
       && (!q || normalize(`${store.name} ${store.sellerName || ''} ${store.address || ''} ${store.mobile || ''} ${store.landline || ''} ${store.id} ${store.district || ''}`).includes(q))
-    )).filter((r) => hasIssue(r, filters.issue) && matchesPlan(r, filters.plan));
+    ))
+      // With a promoter picked, only that promoter's visits count: a store planned for them but
+      // visited by someone else must not show as «visited» (KPIs said 33 while the chip said 30).
+      .map((r) => (filters.promoter ? { ...r, inWeek: r.inWeek.filter((v) => v.promoterName === filters.promoter) } : r))
+      .filter((r) => hasIssue(r, filters.issue) && matchesPlan(r, filters.plan));
   }, [rows, filters, dayPlansByStore]);
 
   const list = useMemo(() => {
@@ -584,7 +588,10 @@ const MehramStoresTab = ({ token, clientView: isClient = false, defaultView = 'c
 
   const kpi = useMemo(() => {
     const visited = base.filter((r) => r.inWeek.length).length;
-    const weekVisits = visited; // one per store, so it always matches the coverage card (a store visited twice still counts once)
+    // A visit = one store in one week (several reports that week = one visit). For a single week that equals
+    // `visited`; for «all weeks» it is the store-weeks total, the same number the week selector shows.
+    const weekVisits = base.reduce((n, r) => n + new Set(r.inWeek.map((v) => weekStart(v.submittedAt))
+      .filter((w) => isStoreActiveInWeek(r.store, w))).size, 0);
     const promoters = new Set(base.flatMap((r) => r.inWeek.map((v) => v.promoterName)));
     const shortage = base.filter((r) => hasIssue(r, 'shortage') && r.inWeek.length).length;
     const never = base.filter((r) => !r.all.length).length;
@@ -839,12 +846,16 @@ const MehramStoresTab = ({ token, clientView: isClient = false, defaultView = 'c
       {/* KPIs */}
       <div className="mst-kpis">
         <div className="mst-kpi main">
-          <span className="mst-kpi-label"><CheckCircle2 size={15} /> بازدید شده {periodName}</span>
+          {/* All weeks: this card counts DIFFERENT stores, the next one counts visits (store × week) — say so, or 538 vs 956 looks like a bug. */}
+          <span className="mst-kpi-label"><CheckCircle2 size={15} /> {week === 'all' ? 'فروشگاه‌های بازدیدشده (حداقل یک بار)' : `بازدید شده ${periodName}`}</span>
           <div className="mst-kpi-big"><b>{fa(kpi.visited)}</b> از {fa(kpi.total)} فروشگاه</div>
           <div className="mst-progress"><span style={{ width: `${kpi.pct}%` }} /></div>
-          <small>{fa(kpi.pct)}٪ پوشش</small>
+          <small>{fa(kpi.pct)}٪ پوشش{week === 'all' && kpi.visited > 0 ? ` · هر فروشگاه به‌طور میانگین ${(kpi.weekVisits / kpi.visited).toLocaleString('fa-IR', { maximumFractionDigits: 1 })} بار بازدید شده` : ''}</small>
         </div>
-        <div className="mst-kpi"><span className="mst-kpi-label"><TrendingUp size={15} /> تعداد بازدید</span><b>{fa(kpi.weekVisits)}</b></div>
+        <div className="mst-kpi">
+          <span className="mst-kpi-label"><TrendingUp size={15} /> {week === 'all' ? 'تعداد بازدید در همه هفته‌ها' : 'تعداد بازدید'}</span><b>{fa(kpi.weekVisits)}</b>
+          {week === 'all' && <small className="mst-kpi-note">هر فروشگاه در هر هفته = ۱ بازدید · {fa(kpi.visited)} فروشگاه در {fa(weeks.filter(([, n]) => n > 0).length)} هفته</small>}
+        </div>
         {!clientView && <div className="mst-kpi"><span className="mst-kpi-label"><Users size={15} /> پروموترها</span><b>{fa(kpi.promoters)}</b></div>}
         {week !== 'all' && !clientView && (
           <button type="button" className={`mst-kpi clickable ${filters.plan === 'missed' ? 'on' : ''}`} onClick={() => setF({ plan: filters.plan === 'missed' ? '' : 'missed' })}

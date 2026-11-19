@@ -8,7 +8,7 @@ import { geoVerdict, answerLabel } from './mehramVisits';
 const STORE_BY_ID = new Map(MEHRAM_STORES.map((s) => [s.id, s]));
 import './mehramAdmin.css';
 
-const fmtTime = (ts) => (ts ? new Date(ts).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }) : '');
+const fmtTime = (ts) => (ts ? new Date(ts).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tehran' }) : '');
 
 // Answer → tone, so a glance at the chips shows what needs attention.
 const answerTone = (key, value) => {
@@ -136,7 +136,7 @@ const APPROVAL_UI = {
   rejected: { Icon: ShieldX, label: 'تایید نشد — مهرام نمی‌بیند', tone: 'bad' },
 };
 
-const fmtWhen = (iso) => (iso ? new Date(iso).toLocaleString('fa-IR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '');
+const fmtWhen = (iso) => (iso ? new Date(iso).toLocaleString('fa-IR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tehran' }) : '');
 
 /* Inline «عدم تایید» form — the reason is required so the other admins know why. */
 const RejectForm = ({ busy, onSubmit, onCancel }) => {

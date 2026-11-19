@@ -128,7 +128,7 @@ export async function exportMehramStoresExcel({ rows, scopeRows, week, catalog, 
       if (r.plan) { c.planned += 1; if (r.inWeek.length) c.plannedDone += 1; }
       c.total += 1;
       if (r.inWeek.length) c.visited += 1;
-      c.visits += r.inWeek.length;
+      c.visits += visitWeekCount(r.inWeek); // a visit = one store in one week, like the panel
       if (r.inWeek.some((v) => Object.values(v.products || {}).some(isShortage))) c.shortage += 1;
       r.inWeek.forEach((v) => c.promoters.add(v.promoterName));
       byCity.set(r.store.city, c);

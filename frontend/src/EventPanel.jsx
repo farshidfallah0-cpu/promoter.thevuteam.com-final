@@ -69,6 +69,32 @@ const newField = (type) => ({
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
+// Money inputs: accept Persian/Arabic digits and separators, keep '' for "not entered yet".
+const toLatinDigits = (str) => String(str).replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+const parseMoney = (raw) => {
+  const digits = toLatinDigits(raw).replace(/[^0-9]/g, '');
+  return digits === '' ? '' : Number(digits);
+};
+const formatMoney = (v) => (v === '' || v === null || v === undefined) ? '' : Number(v).toLocaleString('en-US');
+
+function MoneyInput({ value, onChange, placeholder }) {
+  return (
+    <div className="ep-money-input">
+      <input
+        type="text"
+        inputMode="numeric"
+        dir="ltr"
+        className="ep-s1-input"
+        placeholder={placeholder || 'خالی = هنوز مشخص نیست'}
+        value={formatMoney(value)}
+        onChange={e => onChange(parseMoney(e.target.value))}
+        onClick={e => e.stopPropagation()}
+      />
+      <span className="ep-money-unit">تومان</span>
+    </div>
+  );
+}
+
 export default function EventPanel({ renderHeader }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -79,9 +105,13 @@ export default function EventPanel({ renderHeader }) {
   useEffect(() => {
     if (editSlug) {
       setIsEditing(true);
-      fetch(`${API_URL}/events/${editSlug}`)
-        .then(res => res.json())
-        .then(data => {
+      // The public /events/{slug} hides inactive events (404), which left the
+      // editor blank with no eventId — so edits of an inactive event were never saved.
+      fetch(`${API_URL}/admin/events`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+        .then(res => { if (!res.ok) throw new Error(); return res.json(); })
+        .then(list => {
+          const data = Array.isArray(list) ? list.find(e => e.slug === editSlug) : null;
+          if (!data) setSaveError('ایونت برای ویرایش پیدا نشد. صفحه را دوباره باز کنید.');
           if (data && data.id) {
              setEventId(data.id);
              setEventName(data.name || '');
@@ -118,6 +148,15 @@ export default function EventPanel({ renderHeader }) {
              setTransportCount(data.transport_count !== undefined ? data.transport_count : 1);
              setRequiresSampling(data.requires_sampling || false);
              setSamplingCount(data.sampling_count !== undefined ? data.sampling_count : 2000);
+             setBrandEntryFee(data.brand_entry_fee ?? '');
+             setVuEntryFee(data.vu_entry_fee ?? '');
+             setHasExtraWorker(!!data.has_extra_worker);
+             setExtraWorkerPrice(data.extra_worker_price ?? '');
+             setHasMediaTeam(!!data.has_media_team);
+             setMediaTeamPrice(data.media_team_price ?? '');
+             setPriceReviewNeeded(!!data.price_review_needed);
+             setPriceReviewSaved(!!data.price_review_needed);
+             setCanReviewPrices(!!data.can_review_prices);
              
              if (data.start_date || data.end_date) {
                 const dates = [];
@@ -141,7 +180,7 @@ export default function EventPanel({ renderHeader }) {
              }
           }
         })
-        .catch(err => console.error(err));
+        .catch(() => setSaveError('بارگذاری ایونت برای ویرایش ناموفق بود. صفحه را دوباره باز کنید.'));
     }
   }, [editSlug]);
   const [step, setStep] = useState(1);
@@ -190,6 +229,16 @@ export default function EventPanel({ renderHeader }) {
   const [transportCount, setTransportCount] = useState(1);
   const [requiresSampling, setRequiresSampling] = useState(false);
   const [samplingCount, setSamplingCount] = useState(2000);
+  // Optional costs — all may stay empty and be filled in later.
+  const [brandEntryFee, setBrandEntryFee] = useState('');
+  const [vuEntryFee, setVuEntryFee] = useState('');
+  const [hasExtraWorker, setHasExtraWorker] = useState(false);
+  const [extraWorkerPrice, setExtraWorkerPrice] = useState('');
+  const [hasMediaTeam, setHasMediaTeam] = useState(false);
+  const [mediaTeamPrice, setMediaTeamPrice] = useState('');
+  const [priceReviewNeeded, setPriceReviewNeeded] = useState(false);
+  const [priceReviewSaved, setPriceReviewSaved] = useState(false); // flag as stored on the server
+  const [canReviewPrices, setCanReviewPrices] = useState(false);
   const [eventLocation, setEventLocation] = useState('');
   const [reportLocation, setReportLocation] = useState('');
   const [reportLocationImage, setReportLocationImage] = useState('');
@@ -462,6 +511,11 @@ export default function EventPanel({ renderHeader }) {
   };
 
   const handleSaveEvent = async () => {
+    // Editing but the event never loaded: saving would POST a brand-new event.
+    if (editSlug && !eventId) {
+      setSaveError('ایونت برای ویرایش بارگذاری نشده؛ تغییرات ذخیره نشد. صفحه را دوباره باز کنید.');
+      return;
+    }
     setSaving(true);
     const token = localStorage.getItem('token');
     try {
@@ -476,6 +530,7 @@ export default function EventPanel({ renderHeader }) {
         setup_post_fields: setupPostFields,
         mobile_columns: mobileColumns,
         desktop_columns: desktopColumns,
+        enable_voice: enableVoice, // omitted, the backend default reset it to true on every edit
         enable_chat: enableChat,
         client_name: clientName,
         start_date: eventDates.length > 0 ? eventDates.map(d => d.format ? d.format('YYYY/MM/DD') : (typeof d === 'string' ? d : d.toString())).join(', ') : null,
@@ -499,6 +554,13 @@ export default function EventPanel({ renderHeader }) {
         transport_count: requiresTransport ? transportCount : 0,
         requires_sampling: requiresSampling,
         sampling_count: requiresSampling ? samplingCount : 0,
+        brand_entry_fee: brandEntryFee === '' ? null : brandEntryFee,
+        vu_entry_fee: vuEntryFee === '' ? null : vuEntryFee,
+        has_extra_worker: hasExtraWorker,
+        extra_worker_price: hasExtraWorker && extraWorkerPrice !== '' ? extraWorkerPrice : null,
+        has_media_team: hasMediaTeam,
+        media_team_price: hasMediaTeam && mediaTeamPrice !== '' ? mediaTeamPrice : null,
+        price_review_needed: priceReviewNeeded,
         location: eventLocation,
         report_location: reportLocation,
         report_location_image: reportLocationImage,
@@ -1254,7 +1316,7 @@ export default function EventPanel({ renderHeader }) {
                   <span className="ep-s1-section-dot" style={{ background: '#10b981' }} />
                   نیازمندی‌ها
                 </div>
-                <div className="ep-s1-grid ep-s1-grid-5">
+                <div className="ep-s1-grid ep-s1-grid-5 ep-s1-grid-req">
 
                   {/* Promoters */}
                   <div className="ep-s1-field">
@@ -1531,7 +1593,114 @@ export default function EventPanel({ renderHeader }) {
                     )}
                   </div>
 
+                  {/* Extra worker */}
+                  <div className="ep-s1-field">
+                    <div className={`ep-s1-toggle-card ${hasExtraWorker ? 'is-on' : ''}`} onClick={() => setHasExtraWorker(v => !v)}>
+                      <div className="ep-s1-toggle-card-info">
+                        <svg viewBox="0 0 20 20" fill="currentColor" style={{ color: hasExtraWorker ? '#f59e0b' : '#6b7280' }}><path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" /></svg>
+                        <div>
+                          <div className="ep-s1-toggle-card-title">کارگر اضافه</div>
+                          <div className="ep-s1-toggle-card-sub">{hasExtraWorker ? 'دارد' : 'ندارد'}</div>
+                        </div>
+                      </div>
+                      <div className={`ep-s1-toggle ${hasExtraWorker ? 'on' : ''}`}>
+                        <span className="ep-s1-toggle-knob" />
+                      </div>
+                    </div>
+                    {hasExtraWorker && (
+                      <div className="ep-s1-counter-box mt-3 fade-in">
+                        <label className="ep-s1-label">قیمت کارگر اضافه <span className="ep-optional">اختیاری</span></label>
+                        <MoneyInput value={extraWorkerPrice} onChange={setExtraWorkerPrice} />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Media team */}
+                  <div className="ep-s1-field">
+                    <div className={`ep-s1-toggle-card ${hasMediaTeam ? 'is-on' : ''}`} onClick={() => setHasMediaTeam(v => !v)}>
+                      <div className="ep-s1-toggle-card-info">
+                        <svg viewBox="0 0 20 20" fill="currentColor" style={{ color: hasMediaTeam ? '#ec4899' : '#6b7280' }}><path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" /></svg>
+                        <div>
+                          <div className="ep-s1-toggle-card-title">تیم مدیا</div>
+                          <div className="ep-s1-toggle-card-sub">{hasMediaTeam ? 'دارد' : 'ندارد'}</div>
+                        </div>
+                      </div>
+                      <div className={`ep-s1-toggle ${hasMediaTeam ? 'on' : ''}`}>
+                        <span className="ep-s1-toggle-knob" />
+                      </div>
+                    </div>
+                    {hasMediaTeam && (
+                      <div className="ep-s1-counter-box mt-3 fade-in">
+                        <label className="ep-s1-label">قیمت تیم مدیا <span className="ep-optional">اختیاری</span></label>
+                        <MoneyInput value={mediaTeamPrice} onChange={setMediaTeamPrice} />
+                      </div>
+                    )}
+                  </div>
+
                 </div>
+              </div>
+
+              {/* ── Section: هزینه‌ها ── */}
+              <div className="ep-s1-section">
+                <div className="ep-s1-section-label">
+                  <span className="ep-s1-section-dot" style={{ background: '#f59e0b' }} />
+                  هزینه‌ها
+                  <span className="ep-optional">همه اختیاری — بعداً هم می‌شود وارد کرد</span>
+                </div>
+                <div className="ep-fee-grid">
+                  <div className="ep-fee-card">
+                    <div className="ep-fee-card-head">
+                      <span className="ep-fee-icon" style={{ background: 'rgba(99,102,241,.14)', color: '#6366f1' }}>
+                        <svg viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4zM18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" /></svg>
+                      </span>
+                      <div>
+                        <div className="ep-fee-title">هزینه ورودی برای برند</div>
+                        <div className="ep-fee-sub">مبلغی که محل برگزاری از برند می‌گیرد</div>
+                      </div>
+                    </div>
+                    <MoneyInput value={brandEntryFee} onChange={setBrandEntryFee} />
+                  </div>
+                  <div className="ep-fee-card">
+                    <div className="ep-fee-card-head">
+                      <span className="ep-fee-icon" style={{ background: 'rgba(16,185,129,.14)', color: '#10b981' }}>
+                        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" /><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" /></svg>
+                      </span>
+                      <div>
+                        <div className="ep-fee-title">هزینه ورودی برای VU</div>
+                        <div className="ep-fee-sub">مبلغی که محل برگزاری از VU می‌گیرد</div>
+                      </div>
+                    </div>
+                    <MoneyInput value={vuEntryFee} onChange={setVuEntryFee} />
+                  </div>
+                </div>
+
+                {(() => {
+                  // Only the reviewer (kave) can clear a flag that is already saved.
+                  const locked = priceReviewSaved && !canReviewPrices;
+                  return (
+                    <label className={`ep-review-card ${priceReviewNeeded ? 'on' : ''} ${locked ? 'locked' : ''}`}>
+                      <input
+                        type="checkbox"
+                        checked={priceReviewNeeded}
+                        disabled={locked}
+                        onChange={e => setPriceReviewNeeded(e.target.checked)}
+                      />
+                      <span className="ep-review-box">
+                        <svg viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                      </span>
+                      <span className="ep-review-text">
+                        <span className="ep-review-title">نیاز به بازنگری قیمت</span>
+                        <span className="ep-review-sub">
+                          {locked
+                            ? 'در انتظار بازنگری کاوه — بعد از بررسی، کاوه این تیک را برمی‌دارد.'
+                            : (priceReviewSaved && canReviewPrices)
+                              ? 'این ایونت منتظر بازنگری شماست؛ بعد از اصلاح قیمت‌ها تیک را بردارید و ذخیره کنید.'
+                              : 'اگر قیمت‌ها قطعی نیستند تیک بزنید تا کاوه بررسی و اصلاح کند.'}
+                        </span>
+                      </span>
+                    </label>
+                  );
+                })()}
               </div>
 
 

@@ -31,7 +31,7 @@ const toDateTime = (dateStr, timeStr) => {
 
 // Event window: first day + its start time → last day + its end time
 // (custom_times per day override the default start/end, same as EventCalendarBar).
-const getEventWindow = (event) => {
+export const getEventWindow = (event) => {
   if (!event?.start_date) return null;
   const days = event.start_date.split(',').map((s) => s.trim()).filter(Boolean);
   if (event.end_date) {
@@ -84,6 +84,9 @@ const splitDiff = (ms) => {
   };
 };
 
+const faDate = (d) =>
+  d.toLocaleString('fa-IR', { dateStyle: 'medium', timeStyle: 'short' });
+
 export const EventCountdown = ({ event }) => {
   const [now, setNow] = useState(Date.now());
   const window_ = useMemo(
@@ -105,30 +108,35 @@ export const EventCountdown = ({ event }) => {
   else if (end && now < end) { phase = 'live'; target = end; }
   else phase = 'ended';
 
+  const range = `شروع: ${faDate(start)}${end ? `\nپایان: ${faDate(end)}` : ''}`;
+
   if (phase === 'ended') {
     return (
-      <span className="evc-pill is-ended">
-        <span className="evc-label">پایان یافته</span>
-      </span>
+      <div className="evt-box is-ended" title={range}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+        <span className="evt-label">پایان یافته</span>
+      </div>
     );
   }
 
   const { days, hrs, mins, secs } = splitDiff(target - now);
+  // Always 4 slots (days · hours · min · sec) so digits line up in every row; no days → ghost slot keeps the hours column in place.
+  const tiles = [[days > 0 ? String(days) : '', 'روز', days <= 0], [hrs, 'ساعت'], [mins, 'دقیقه'], [secs, 'ثانیه']];
+  const pct = phase === 'live' && end ? Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100)) : 0;
 
   return (
-    <span
-      className={`evc-pill ${phase === 'before' ? 'is-before' : 'is-live'}`}
-      title={phase === 'before' ? 'زمان باقی‌مانده تا شروع' : 'زمان باقی‌مانده تا پایان'}
-    >
-      <span className="evc-dot" />
-      <span className="evc-label">{phase === 'before' ? 'تا شروع' : 'تا پایان'}</span>
-      <span className="evc-time" dir="ltr">
-        {days > 0 && <span className="evc-days">{days}d</span>}
-        <span>{hrs}</span><span className="evc-colon">:</span>
-        <span>{mins}</span><span className="evc-colon">:</span>
-        <span>{secs}</span>
-      </span>
-    </span>
+    <div className={`evt-box ${phase === 'before' ? 'is-before' : 'is-live'}`} title={range}>
+      <div className="evt-side">
+        <span className="evt-label"><span className="evt-dot" />{phase === 'before' ? 'تا شروع' : 'تا پایان'}</span>
+        {phase === 'live' && <span className="evt-pct">{Math.round(pct).toLocaleString('fa-IR')}٪</span>}
+      </div>
+      <div className="evt-tiles" dir="ltr">
+        {tiles.map(([v, l, ghost]) => (
+          <span className={`evt-tile${ghost ? ' is-ghost' : ''}`} key={l} aria-hidden={ghost || undefined}><b>{v || '00'}</b><i>{l}</i></span>
+        ))}
+      </div>
+      <div className={`evt-bar ${phase === 'before' ? 'is-idle' : ''}`}><span style={{ width: `${pct}%` }} /></div>
+    </div>
   );
 };
 

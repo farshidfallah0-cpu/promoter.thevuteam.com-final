@@ -1585,3 +1585,99 @@ select.ep-s1-select {
     padding: 12px;
   }
 }
+/* ===== Requirements grid (7 cards) + costs section ===== */
+.ep-s1-grid.ep-s1-grid-req { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 1100px) { .ep-s1-grid.ep-s1-grid-req { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px)  { .ep-s1-grid.ep-s1-grid-req { grid-template-columns: 1fr; } }
+
+.ep-optional {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  padding: 1px 8px;
+  margin-inline-start: 6px;
+}
+
+.ep-money-input { position: relative; margin-top: 8px; }
+.ep-money-input .ep-s1-input {
+  width: 100%;
+  padding-left: 58px;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .02em;
+}
+.ep-money-input .ep-s1-input::placeholder { text-align: right; direction: rtl; letter-spacing: 0; }
+.ep-money-unit {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.ep-fee-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+@media (max-width: 640px) { .ep-fee-grid { grid-template-columns: 1fr; } }
+
+.ep-fee-card {
+  background: var(--bg-input);
+  border: 1.5px solid var(--border-color);
+  border-radius: 12px;
+  padding: 12px 14px;
+  transition: border-color .15s;
+}
+.ep-fee-card:focus-within { border-color: #f59e0b; }
+.ep-fee-card-head { display: flex; align-items: center; gap: 10px; }
+.ep-fee-icon {
+  width: 34px; height: 34px; border-radius: 10px;
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.ep-fee-icon svg { width: 18px; height: 18px; }
+.ep-fee-title { font-size: 0.88rem; font-weight: 700; color: var(--text-primary); }
+.ep-fee-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+
+.ep-review-card {
+  position: relative;
+  margin-top: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1.5px dashed var(--border-color);
+  background: var(--bg-input);
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.ep-review-card:hover { border-color: #f59e0b; }
+.ep-review-card.on {
+  border-style: solid;
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, .08);
+}
+.ep-review-card.locked { cursor: not-allowed; }
+.ep-review-card input { position: absolute; opacity: 0; pointer-events: none; }
+.ep-review-box {
+  width: 22px; height: 22px; flex-shrink: 0; margin-top: 1px;
+  border-radius: 6px;
+  border: 2px solid var(--border-color);
+  display: inline-flex; align-items: center; justify-content: center;
+  color: transparent;
+  transition: all .15s;
+}
+.ep-review-box svg { width: 14px; height: 14px; }
+.ep-review-card.on .ep-review-box { background: #f59e0b; border-color: #f59e0b; color: #fff; }
+.ep-review-card input:focus-visible + .ep-review-box { outline: 2px solid #f59e0b; outline-offset: 2px; }
+.ep-review-text { display: flex; flex-direction: column; gap: 3px; }
+.ep-review-title { font-size: 0.9rem; font-weight: 700; color: var(--text-primary); }
+.ep-review-card.on .ep-review-title { color: #d97706; }
+.ep-review-sub { font-size: 0.75rem; color: var(--text-muted); line-height: 1.6; }

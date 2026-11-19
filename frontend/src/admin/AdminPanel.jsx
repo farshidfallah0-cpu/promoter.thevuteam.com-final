@@ -1,5 +1,8 @@
 import PageLoader from '../components/PageLoader';
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from 'react';
+// Payroll lives in its own chunk: only the event managers ever open it.
+const PayrollTab = lazy(() => import('./payroll/PayrollTab'));
+const PayrollComingSoon = lazy(() => import('./payroll/PayrollComingSoon'));
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -10,6 +13,8 @@ import persian_fa from "react-date-object/locales/persian_fa";
 import gregorian from "react-date-object/calendars/gregorian";
 import gregorian_en from "react-date-object/locales/gregorian_en";
 import './adminStyles.css';
+import './headerNav.css';
+import { PAYROLL_ENABLED, isPayrollEvent } from './payroll/payrollConfig';
 import { resolveEffectiveRole, isUserScheduledToday } from '../utils/roleUtils';
 import { calcGlobalProgress } from '../utils/progressUtils';
 import { buildDailyTeam } from './utils/dailyTeam';
@@ -33,7 +38,8 @@ import { EquipmentArchive } from './tabs/EquipmentArchiveTab/EquipmentArchive';
 import MainHeader from '../components/MainHeader';
 import MehramStoresTab from '../components/MehramSupermarketReport/MehramStoresTab';
 import AdminSidebar from './components/AdminSidebar';
-import { EventCountdown } from './components/EventCountdown';
+import { EventCountdown, getEventWindow } from './components/EventCountdown';
+import EventFinalReport from './eventReport/EventFinalReport';
 import { RosterManager } from './resources/RosterManager';
 import { ClientsManager } from './resources/ClientsManager';
 import { BadgeManager } from './resources/BadgeManager';
@@ -52,6 +58,8 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 const AdminPanel = ({ token, user, onBack, onLogout, theme, toggleTheme }) => {
   // Approve / archive / delete of events is restricted server-side to kave & S.Parmida.
   const canManageEvents = !!user?.can_manage_events;
+  // Payroll has its own list (event managers + farshid76), checked again on the server.
+  const canPayroll = !!user?.can_manage_payroll;
   // Client-scoped panel account (e.g. mahram-admin): only that client's events,
   // no archives/clients/equipment, and inside an event no dashboard/map/equipment.
   // The server enforces the same limits; this just hides what it would refuse.
@@ -102,6 +110,11 @@ const AdminPanel = ({ token, user, onBack, onLogout, theme, toggleTheme }) => {
     localStorage.setItem('adminActiveTab', activeTab);
   }, [activeTab]);
 
+  const [reportEvent, setReportEvent] = useState(null); // «گزارش ایونت» modal
+  const [sheetBusy, setSheetBusy] = useState(null); // event id whose Google Sheet is being created/reloaded
+  const isEventEnded = (ev) => {
+    try { const w = getEventWindow(ev); return !!(w?.end && Date.now() >= w.end.getTime()); } catch { return false; }
+  };
   const fetchEvents = async (quiet = false) => {
     try {
       const res = await axios.get(`${API_URL}/admin/events`, {
@@ -131,6 +144,23 @@ const AdminPanel = ({ token, user, onBack, onLogout, theme, toggleTheme }) => {
       toast.success('ایونت حذف شد');
     } catch (e) {
       toast.error('خطا در حذف ایونت');
+    }
+  };
+
+  // Create (first time) or reload the event's Google Sheet from the current DB data
+  const syncEventSheet = async (ev) => {
+    if (sheetBusy) return;
+    setSheetBusy(ev.id);
+    try {
+      const res = await axios.post(`${API_URL}/admin/events/${ev.id}/sheet/sync`, {}, {
+        headers: { Authorization: `Bearer ${token}` }, timeout: 90000
+      });
+      setEvents(prev => prev.map(e => e.id === ev.id ? { ...e, sheet_url: res.data.sheet_url, sheet_synced_at: res.data.sheet_synced_at, sheet_error: null } : e));
+      toast.success(res.data.created ? 'شیت ایونت ساخته شد' : 'شیت ایونت بروزرسانی شد');
+    } catch (e) {
+      toast.error(e?.response?.data?.detail || 'خطا در ارتباط با گوگل شیت');
+    } finally {
+      setSheetBusy(null);
     }
   };
 
@@ -830,6 +860,10 @@ const AdminPanel = ({ token, user, onBack, onLogout, theme, toggleTheme }) => {
 
   return (
     <div className="admin-app-container">
+      {reportEvent && (
+        <EventFinalReport event={reportEvent} token={token} onClose={() => setReportEvent(null)}
+          onSaved={(id) => setEvents(list => list.map(e => e.id === id ? { ...e, has_final_report: true } : e))} />
+      )}
       {/* Ambient blobs */}
       <div className="gw-blob gw-blob-1" />
       <div className="gw-blob gw-blob-2" />
@@ -901,6 +935,12 @@ const AdminPanel = ({ token, user, onBack, onLogout, theme, toggleTheme }) => {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 8v13H3V8" /><path d="M1 3h22v5H1z" /><path d="M10 12h4" /></svg>
               آرشیو ایونت‌ها
             </button>
+            {canPayroll && (
+              <button className={`gw-tab-btn gw-tab-btn--payroll ${gwTab === 'payroll' && !selectedEvent ? 'active' : ''}`} onClick={() => { setGwTab('payroll'); setSelectedEvent(null); setIsMobileMenuOpen(false); }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" /><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" /></svg>
+                محاسبه عملکرد
+              </button>
+            )}
             </>)}
           </nav>
         </div>
@@ -982,7 +1022,7 @@ const AdminPanel = ({ token, user, onBack, onLogout, theme, toggleTheme }) => {
                     </div>
                   ) : (
                     <div className="gw-table-wrap">
-                      <table className="gw-table">
+                      <table className="gw-table gw-table--events">
                         <thead>
                           <tr>
                             <th style={{textAlign:'center'}}>#</th>
@@ -991,8 +1031,9 @@ const AdminPanel = ({ token, user, onBack, onLogout, theme, toggleTheme }) => {
                             <th style={{textAlign:'center'}}>تایید کلاینت</th>
                             <th style={{textAlign:'center'}}>وضعیت</th>
                             <th style={{textAlign:'center'}}>تاریخ شروع</th>
-                            <th style={{textAlign:'center'}}>تایمر</th>
                             <th style={{textAlign:'center'}}></th>
+                            <th className="gw-th-spacer" aria-hidden="true"></th>
+                            <th className="gw-th-timer" style={{textAlign:'center'}}>تایمر</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1000,6 +1041,7 @@ const AdminPanel = ({ token, user, onBack, onLogout, theme, toggleTheme }) => {
                             <tr key={ev.id} className={`gw-table-row${!ev.is_active ? ' gw-row-disabled' : ''}`} onClick={() => setSelectedEvent(ev)}>
                               <td className="gw-td-num" style={{textAlign:'center'}}>{i + 1}</td>
                               <td className="gw-td-name">
+                                <div className="gw-name-cell">
                                 <div className="gw-event-icon-wrap">
                                   {ev.client_logo ? (
                                     <img src={ev.client_logo} alt={ev.client_name || ''} className="gw-event-icon-logo" />
@@ -1007,10 +1049,11 @@ const AdminPanel = ({ token, user, onBack, onLogout, theme, toggleTheme }) => {
                                     <div className="gw-event-icon">{ev.name[0]}</div>
                                   )}
                                 </div>
-                                <span>{ev.name}</span>
+                                <span className="gw-name-text">{ev.name}<small>{ev.slug}</small>{ev.price_review_needed && <span className="gw-price-review" title="قیمت‌های این ایونت منتظر بازنگری کاوه است">بازنگری قیمت</span>}</span>
                                 {ev.pending_approval_count > 0 && (
                                   <span className="gw-pending-badge" title="گزارش‌هایی که کلاینت هنوز نمی‌بیند">⏳ {ev.pending_approval_count.toLocaleString('fa-IR')} در انتظار تایید</span>
                                 )}
+                                </div>
                               </td>
                               <td style={{textAlign:'center'}}>
                                 {ev.client_name ? (
@@ -1038,28 +1081,52 @@ const AdminPanel = ({ token, user, onBack, onLogout, theme, toggleTheme }) => {
                               </td>
                               <td className="gw-td-date" style={{textAlign:'center'}}>
                                 {ev.start_date ? ev.start_date.split(',')[0] : '—'}
-                              </td>
-                              <td style={{textAlign:'center'}}>
-                                {ev.is_active ? <EventCountdown event={ev} /> : <span className="evc-empty">—</span>}
+                                {ev.start_date && ev.start_date.split(',').filter(x => x.trim()).length > 1 && (
+                                  <span className="gw-date-days">{ev.start_date.split(',').filter(x => x.trim()).length.toLocaleString('fa-IR')} روز</span>
+                                )}
                               </td>
                               <td className="gw-td-action gw-td-action-group">
-                                <button className="gw-open-btn" onClick={e => { e.stopPropagation(); setSelectedEvent(ev); }}>
-                                  باز کردن
-                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
-                                </button>
-                                {!isScoped && (
-                                <button className="gw-edit-btn" title="ویرایش ایونت" onClick={e => { e.stopPropagation(); navigate(`/event?edit=${ev.slug}`); }}>
-                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                </button>
-                                )}
-                                {canManageEvents && (<>
-                                <button className="gw-archive-btn" title="آرشیو ایونت" onClick={e => { e.stopPropagation(); archiveEvent(ev); }}>
-                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8v13H3V8" /><path d="M1 3h22v5H1z" /><path d="M10 12h4" /></svg>
-                                </button>
-                                <button className="gw-delete-btn" title="حذف ایونت" onClick={e => { e.stopPropagation(); deleteEvent(ev); }}>
-                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" /></svg>
-                                </button>
-                                </>)}
+                                <span className="gw-icon-group" dir="rtl">
+                                  {/* Six fixed slots (right → left): report · sheet · reload · edit · archive · delete. Empty slots keep their place so icons never shift between rows. */}
+                                  {!isScoped && (ev.has_final_report || isEventEnded(ev)) ? (
+                                  <button className={`gw-act gw-act--report ${ev.has_final_report ? 'is-done' : ''}`} data-tip={ev.has_final_report ? 'گزارش ایونت' : 'نوشتن گزارش ایونت'} data-tip-sub={ev.has_final_report ? 'ثبت شده · برای ویرایش کلیک کنید' : 'ایونت تمام شده و گزارشی ندارد'} aria-label="گزارش ایونت" onClick={e => { e.stopPropagation(); setReportEvent(ev); }}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /><path d="M8 13h8M8 17h5" /></svg>
+                                    {ev.has_final_report && <span className="gw-act-dot" />}
+                                  </button>
+                                  ) : <span className="gw-act-empty" aria-hidden="true" />}
+                                  {!isScoped ? (ev.sheet_url ? (<>
+                                  <a className={`gw-act gw-act--sheet is-done ${ev.sheet_error ? 'has-warn' : ''}`} href={ev.sheet_url} target="_blank" rel="noopener noreferrer" data-tip="باز کردن شیت ایونت" data-tip-sub="در تب جدید باز می‌شود" aria-label="باز کردن شیت ایونت" onClick={e => e.stopPropagation()}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M3 15h18M9 3v18" /></svg>
+                                    {ev.sheet_error && <span className="gw-act-dot gw-act-dot--warn" />}
+                                  </a>
+                                  <button className={`gw-act gw-act--reload ${sheetBusy === ev.id ? 'is-busy' : ''} ${ev.sheet_error ? 'has-warn' : ''}`} disabled={!!sheetBusy} data-tip={ev.sheet_error ? 'بروزرسانی ناموفق بود — دوباره تلاش کنید' : sheetBusy === ev.id ? 'در حال بروزرسانی…' : 'بروزرسانی شیت'} data-tip-sub={ev.sheet_error ? String(ev.sheet_error).slice(0, 90) : ev.sheet_synced_at ? `آخرین بروزرسانی: ${new Date(ev.sheet_synced_at).toLocaleString('fa-IR', { dateStyle: 'short', timeStyle: 'short' })}` : 'ارسال اطلاعات جدید ایونت به شیت'} data-tip-kind={ev.sheet_error ? 'error' : undefined} aria-label="بروزرسانی شیت" onClick={e => { e.stopPropagation(); syncEventSheet(ev); }}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></svg>
+                                  </button>
+                                  </>) : (<>
+                                  <button className={`gw-act gw-act--sheet ${sheetBusy === ev.id ? 'is-busy' : ''} ${ev.sheet_error ? 'has-warn' : ''}`} disabled={!!sheetBusy} data-tip={ev.sheet_error ? 'ساخت شیت ناموفق بود — دوباره تلاش کنید' : 'ساخت شیت ایونت'} data-tip-sub={ev.sheet_error ? String(ev.sheet_error).slice(0, 90) : 'یک تب جدید در گوگل شیت ساخته می‌شود'} data-tip-kind={ev.sheet_error ? 'error' : undefined} aria-label="ساخت شیت ایونت" onClick={e => { e.stopPropagation(); syncEventSheet(ev); }}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M3 15h18M9 3v18" /></svg>
+                                    {ev.sheet_error && <span className="gw-act-dot gw-act-dot--warn" />}
+                                  </button>
+                                  <span className="gw-act-empty" aria-hidden="true" />
+                                  </>)) : (<><span className="gw-act-empty" aria-hidden="true" /><span className="gw-act-empty" aria-hidden="true" /></>)}
+                                  {!isScoped ? (
+                                  <button className="gw-act gw-act--edit" data-tip="ویرایش ایونت" data-tip-sub="تنظیمات، تاریخ‌ها و هزینه‌ها" aria-label="ویرایش ایونت" onClick={e => { e.stopPropagation(); navigate(`/event?edit=${ev.slug}`); }}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                                  </button>
+                                  ) : <span className="gw-act-empty" aria-hidden="true" />}
+                                  {canManageEvents ? (<>
+                                  <button className="gw-act gw-act--archive" data-tip="آرشیو ایونت" data-tip-sub="از لیست اصلی خارج می‌شود" aria-label="آرشیو ایونت" onClick={e => { e.stopPropagation(); archiveEvent(ev); }}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8v13H3V8" /><path d="M1 3h22v5H1z" /><path d="M10 12h4" /></svg>
+                                  </button>
+                                  <button className="gw-act gw-act--delete" data-tip="حذف ایونت" data-tip-sub="غیرقابل بازگشت" data-tip-kind="error" aria-label="حذف ایونت" onClick={e => { e.stopPropagation(); deleteEvent(ev); }}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" /></svg>
+                                  </button>
+                                  </>) : (<><span className="gw-act-empty" aria-hidden="true" /><span className="gw-act-empty" aria-hidden="true" /></>)}
+                                </span>
+                              </td>
+                              <td className="gw-td-spacer" aria-hidden="true"></td>
+                              <td className="gw-td-timer" style={{textAlign:'center'}}>
+                                {ev.is_active ? <EventCountdown event={ev} /> : <span className="evc-empty">—</span>}
                               </td>
                             </tr>
                           ))}
@@ -1124,6 +1191,12 @@ const AdminPanel = ({ token, user, onBack, onLogout, theme, toggleTheme }) => {
               )}
 
               {/* ── TAB: Archived Events ── */}
+              {!isScoped && canPayroll && gwTab === 'payroll' && (
+                <Suspense fallback={<div className="gw-empty"><p>در حال بارگذاری محاسبه عملکرد...</p></div>}>
+                  {PAYROLL_ENABLED ? <PayrollTab token={token} /> : <PayrollComingSoon />}
+                </Suspense>
+              )}
+
               {!isScoped && gwTab === 'archivedEvents' && (
                 <>
                   <div className="gw-heading">
@@ -1209,7 +1282,7 @@ const AdminPanel = ({ token, user, onBack, onLogout, theme, toggleTheme }) => {
                   {activeTab === 'dashboard' && <DashboardTab stats={stats} weeklyData={weeklyData} weeklyTrend={weeklyTrend} formatAmount={formatAmount} analytics={analytics} users={users} selectedEvent={selectedEvent} amountField={amountField} fieldInsights={fieldInsights} promoterDelays={promoterDelays} dailyTeam={dailyTeam} />}
                   {activeTab === 'reports' && <ReportsTab selectedEvent={selectedEvent} submissions={submissions} token={token} formatAmount={formatAmount} users={users} onGoToMapPoint={isScoped ? undefined : goToMapPoint}
                     requiresApproval={!isScoped && !!events.find(e => e.id === selectedEvent.id)?.requires_report_approval}
-                    canApprove={!!user?.can_approve_reports} canDelete={!!user?.can_delete_reports}
+                    canApprove={!!user?.can_approve_reports} canDelete={!!user?.can_delete_reports} canPayroll={PAYROLL_ENABLED && canPayroll && !isScoped && isPayrollEvent(selectedEvent)}
                     clientView={isScoped}
                     onRefresh={() => loadSubmissions(true)} refreshing={subsRefreshing} updatedAt={subsUpdatedAt}
                     onApprovalChange={(rows) => { setSubmissions(prev => prev.map(s => { const r = rows.find(x => x.id === s.id); return r ? { ...s, ...r } : s; })); fetchEvents(true); }} />}
