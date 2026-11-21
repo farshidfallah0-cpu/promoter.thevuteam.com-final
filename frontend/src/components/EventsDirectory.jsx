@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import CrewHeader from './crew/CrewHeader';
 import './EventsDirectory.css';
+import { sortedEventDays } from '../admin/utils/eventDates';
+import { EventCardsSkeleton } from './Skeleton';
 import { Calendar, Clock, ArrowLeft, Loader2, AlertCircle, Building2, CheckCircle2, XCircle, MapPin } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -60,7 +62,8 @@ function parseOneDateStr(raw) {
 function extractDates(startDateRaw, endDateRaw) {
   if (!startDateRaw) return { start: null, end: null, isMultiDay: false };
 
-  const allDates = startDateRaw.split(',').map(s => s.trim()).filter(Boolean);
+  // chronological: stored order is the click order, not date order
+  const allDates = sortedEventDays(startDateRaw);
   const firstRaw = allDates[0];
 
   let endRaw;
@@ -277,10 +280,7 @@ function EventDirectoryCard({ event, isActive, navigate }) {
       <div className="ed-page">
 
         {loading ? (
-          <div className="ed-state">
-            <Loader2 className="ed-spinner" />
-            <span>در حال بارگذاری…</span>
-          </div>
+          <div className="ed-box"><EventCardsSkeleton count={6} /></div>
         ) : error ? (
           <div className="ed-error">
             <AlertCircle size={18} />

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { sortedEventDays } from './admin/utils/eventDates';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import DatePicker, { DateObject } from "react-multi-date-picker";
 import persian from "react-date-object/calendars/persian";
@@ -533,7 +534,8 @@ export default function EventPanel({ renderHeader }) {
         enable_voice: enableVoice, // omitted, the backend default reset it to true on every edit
         enable_chat: enableChat,
         client_name: clientName,
-        start_date: eventDates.length > 0 ? eventDates.map(d => d.format ? d.format('YYYY/MM/DD') : (typeof d === 'string' ? d : d.toString())).join(', ') : null,
+        // chronological, so «first day» is the same everywhere regardless of click order
+        start_date: eventDates.length > 0 ? sortedEventDays(eventDates.map(d => d.format ? d.format('YYYY/MM/DD') : (typeof d === 'string' ? d : d.toString())).join(', ')).join(', ') : null,
         start_time: startTime,
         end_date: null, // We store all dates in start_date as a comma-separated string
         end_time: endTime,

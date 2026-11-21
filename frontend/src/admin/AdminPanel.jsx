@@ -1,4 +1,7 @@
 import PageLoader from '../components/PageLoader';
+import { EventsTableSkeleton, EventsHeaderSkeleton } from '../components/Skeleton';
+import EventsToolbar, { SORTS } from './components/EventsToolbar';
+import { sortedEventDays, dayKey } from './utils/eventDates';
 import React, { useState, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from 'react';
 // Payroll lives in its own chunk: only the event managers ever open it.
 const PayrollTab = lazy(() => import('./payroll/PayrollTab'));
@@ -855,7 +858,81 @@ const AdminPanel = ({ token, user, onBack, onLogout, theme, toggleTheme }) => {
     if (isScoped && selectedEvent && !eventsLoading && !events.some(ev => ev.id === selectedEvent.id)) setSelectedEvent(null);
   }, [isScoped, selectedEvent, events, eventsLoading]);
   const archivedEvents = events.filter(ev => ev.is_archived);
-  const filteredEvents = activeEvents.filter(ev => !eventsSearch || ev.name.includes(eventsSearch) || ev.slug.includes(eventsSearch));
+  const [evStatus, setEvStatus] = useState('all');
+  const [evPhase, setEvPhase] = useState('all');
+  const [evSort, setEvSort] = useState('newest');
+  const [evClient, setEvClient] = useState('all');
+  const [evFlags, setEvFlags] = useState({ pending: false, noSheet: false, priceReview: false });
+  const resetEvFilters = () => { setEventsSearch(''); setEvStatus('all'); setEvPhase('all'); setEvClient('all'); setEvFlags({ pending: false, noSheet: false, priceReview: false }); };
+
+  // Per-event derived info (phase / first day / day count), computed once per fetch.
+  const evMeta = useMemo(() => {
+    const m = new Map();
+    const now = Date.now();
+    for (const ev of activeEvents) {
+      const days = sortedEventDays(ev.start_date);
+      let phase = 'upcoming';
+      try {
+        const w = getEventWindow(ev);
+        if (w?.end && now >= w.end.getTime()) phase = 'ended';
+        else if (w?.start && now >= w.start.getTime()) phase = 'live';
+      } catch { /* no usable dates → treated as upcoming */ }
+      m.set(ev.id, { days, first: days[0] || null, count: days.length, phase, firstKey: days.length ? dayKey(days[0]) : NaN });
+    }
+    return m;
+  }, [events]);
+
+  const evClients = useMemo(() => {
+    const by = new Map();
+    for (const ev of activeEvents) {
+      const key = ev.client_name || '__none';
+      const cur = by.get(key) || { key, name: ev.client_name || 'بدون کلاینت', logo: ev.client_logo || null, count: 0 };
+      cur.count += 1;
+      if (!cur.logo && ev.client_logo) cur.logo = ev.client_logo;
+      by.set(key, cur);
+    }
+    return [...by.values()].sort((a, b) => b.count - a.count);
+  }, [events]);
+
+  const q = (eventsSearch || '').trim().toLowerCase();
+  const matchesEv = (ev, skip = {}) => {
+    if (q && !`${ev.name} ${ev.slug} ${ev.client_name || ''}`.toLowerCase().includes(q)) return false;
+    if (!skip.status && evStatus !== 'all' && (evStatus === 'active') !== !!ev.is_active) return false;
+    if (!skip.phase && evPhase !== 'all' && evMeta.get(ev.id)?.phase !== evPhase) return false;
+    if (evClient !== 'all' && (ev.client_name || '__none') !== evClient) return false;
+    if (evFlags.pending && !(ev.pending_approval_count > 0)) return false;
+    if (evFlags.noSheet && ev.sheet_url) return false;
+    if (evFlags.priceReview && !ev.price_review_needed) return false;
+    return true;
+  };
+  const evCmp = {
+    newest: (a, b) => b.id - a.id,
+    oldest: (a, b) => a.id - b.id,
+    // events with no usable date always sink to the bottom
+    soonest: (a, b) => (evMeta.get(a.id)?.firstKey || Infinity) - (evMeta.get(b.id)?.firstKey || Infinity) || b.id - a.id,
+    latest: (a, b) => (evMeta.get(b.id)?.firstKey || -Infinity) - (evMeta.get(a.id)?.firstKey || -Infinity) || b.id - a.id,
+    days: (a, b) => (evMeta.get(b.id)?.count || 0) - (evMeta.get(a.id)?.count || 0) || b.id - a.id,
+    name: (a, b) => a.name.localeCompare(b.name, 'fa'),
+  }[evSort] || ((a, b) => b.id - a.id);
+  const filteredEvents = activeEvents.filter(ev => matchesEv(ev)).sort(evCmp);
+  // Counts shown on the tabs/chips ignore their own filter so they stay useful.
+  const evStatusCounts = { all: 0, active: 0, inactive: 0 };
+  const evPhaseCounts = { all: 0, live: 0, upcoming: 0, ended: 0 };
+  for (const ev of activeEvents) {
+    if (matchesEv(ev, { status: true })) { evStatusCounts.all++; evStatusCounts[ev.is_active ? 'active' : 'inactive']++; }
+    if (matchesEv(ev, { phase: true })) { evPhaseCounts.all++; evPhaseCounts[evMeta.get(ev.id)?.phase]++; }
+  }
+  const evFlagCounts = {
+    pending: activeEvents.filter(ev => ev.pending_approval_count > 0).length,
+    noSheet: activeEvents.filter(ev => !ev.sheet_url).length,
+    priceReview: activeEvents.filter(ev => ev.price_review_needed).length,
+  };
+  const evStats = [
+    { label: 'کل ایونت‌ها', value: activeEvents.length },
+    { label: 'فعال', value: activeEvents.filter(ev => ev.is_active).length },
+    { label: 'در حال برگزاری', value: activeEvents.filter(ev => ev.is_active && evMeta.get(ev.id)?.phase === 'live').length, tone: 'live', pulse: true },
+    ...(!isScoped ? [{ label: 'در انتظار تایید', value: activeEvents.reduce((n, ev) => n + (ev.pending_approval_count > 0 ? 1 : 0), 0), tone: 'warn' }] : []),
+  ];
   const filteredArchived = archivedEvents.filter(ev => !eventsSearch || ev.name.includes(eventsSearch) || ev.slug.includes(eventsSearch));
 
   return (
@@ -990,35 +1067,33 @@ const AdminPanel = ({ token, user, onBack, onLogout, theme, toggleTheme }) => {
               {/* ── TAB: Events ── */}
               {gwTab === 'events' && (
                 <>
-                  <div className="gw-heading">
-                    <h1>ایونت‌های فعال</h1>
-                    <p>یک ایونت را برای مدیریت انتخاب کنید</p>
-                  </div>
-
-                  <div className="gw-toolbar">
-                    <div className="gw-search">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-                      <input
-                        placeholder="جستجوی ایونت..."
-                        value={eventsSearch || ''}
-                        onChange={e => setEventsSearch(e.target.value)}
-                      />
-                    </div>
-                    {!isScoped && (
-                    <button className="gw-new-btn" onClick={() => navigate('/event')}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-                      ایونت جدید
-                    </button>
-                    )}
-                  </div>
+                  {eventsLoading ? <EventsHeaderSkeleton /> : (
+                  <EventsToolbar
+                    title="ایونت‌ها"
+                    subtitle="یک ایونت را برای مدیریت انتخاب کنید"
+                    stats={evStats}
+                    search={eventsSearch || ''} setSearch={setEventsSearch}
+                    status={evStatus} setStatus={setEvStatus} statusCounts={evStatusCounts}
+                    phase={evPhase} setPhase={setEvPhase} phaseCounts={evPhaseCounts}
+                    sort={evSort} setSort={setEvSort}
+                    client={evClient} setClient={setEvClient} clients={isScoped ? null : evClients}
+                    flags={evFlags} setFlags={setEvFlags} flagCounts={evFlagCounts}
+                    showFlags={!isScoped}
+                    onNew={isScoped ? null : () => navigate('/event')}
+                    resultCount={filteredEvents.length} totalCount={activeEvents.length}
+                    onReset={resetEvFilters}
+                  />
+                  )}
 
                   {eventsLoading ? (
-                    <PageLoader label="در حال بارگذاری ایونت‌ها" />
+                    <EventsTableSkeleton rows={6} />
                   ) : filteredEvents.length === 0 ? (
                     <div className="gw-empty">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0H4" /></svg>
                       <p>ایونتی یافت نشد</p>
-                      {!isScoped && <button className="gw-new-btn" onClick={() => navigate('/event')}>ساخت اولین ایونت</button>}
+                      {activeEvents.length > 0
+                        ? <button className="gw-new-btn" onClick={resetEvFilters}>پاک کردن فیلترها</button>
+                        : !isScoped && <button className="gw-new-btn" onClick={() => navigate('/event')}>ساخت اولین ایونت</button>}
                     </div>
                   ) : (
                     <div className="gw-table-wrap">
@@ -1080,9 +1155,9 @@ const AdminPanel = ({ token, user, onBack, onLogout, theme, toggleTheme }) => {
                                 </span>
                               </td>
                               <td className="gw-td-date" style={{textAlign:'center'}}>
-                                {ev.start_date ? ev.start_date.split(',')[0] : '—'}
-                                {ev.start_date && ev.start_date.split(',').filter(x => x.trim()).length > 1 && (
-                                  <span className="gw-date-days">{ev.start_date.split(',').filter(x => x.trim()).length.toLocaleString('fa-IR')} روز</span>
+                                {evMeta.get(ev.id)?.first || '—'}
+                                {(evMeta.get(ev.id)?.count || 0) > 1 && (
+                                  <span className="gw-date-days">{evMeta.get(ev.id).count.toLocaleString('fa-IR')} روز</span>
                                 )}
                               </td>
                               <td className="gw-td-action gw-td-action-group">
@@ -1243,7 +1318,7 @@ const AdminPanel = ({ token, user, onBack, onLogout, theme, toggleTheme }) => {
                               </td>
                               <td className="gw-td-date">{ev.client_name || '—'}</td>
                               <td><code className="gw-slug">{ev.slug}</code></td>
-                              <td className="gw-td-date">{ev.start_date ? ev.start_date.split(',')[0] : '—'}</td>
+                              <td className="gw-td-date">{sortedEventDays(ev.start_date)[0] || '—'}</td>
                               <td className="gw-td-action gw-td-action-group">
                                 <button className="gw-open-btn" onClick={e => { e.stopPropagation(); setSelectedEvent(ev); }}>
                                   باز کردن

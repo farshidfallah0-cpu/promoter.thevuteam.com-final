@@ -1,0 +1,66 @@
+/* Shimmer skeletons. Neutral tints so they read on the dark admin and on both public themes. */
+.sk, .sk-app { --sk-base: rgba(148,163,184,.10); --sk-hi: rgba(255,236,190,.16); --sk-line: rgba(255,255,255,.09); }
+
+.sk { display: block; position: relative; overflow: hidden; border-radius: 8px; background: var(--sk-base); flex-shrink: 0; }
+.sk::after { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 25%, var(--sk-hi) 50%, transparent 75%); transform: translateX(110%); animation: sk-shine 1.5s cubic-bezier(.4,0,.2,1) infinite; }
+@keyframes sk-shine { to { transform: translateX(-110%); } } /* RTL: sweeps right → left */
+.sk--circle { border-radius: 50%; }
+.sk--pill { border-radius: 999px; }
+
+/* ── shell: same background and width as the real admin page (.gw-root / .gw-main) ── */
+.sk-app { position: fixed; inset: 0; z-index: 9999; background: #222222; direction: rtl; overflow: hidden; display: flex; flex-direction: column; }
+.sk-top { height: 64px; padding: 0 40px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,.06); flex-shrink: 0; background: rgba(34,34,34,.92); }
+.sk-top-r, .sk-top-l { display: flex; align-items: center; gap: 12px; }
+.sk-body { flex: 1; width: 100%; max-width: min(1640px, 100%); margin: 0 auto; padding: 52px 40px; box-sizing: border-box; overflow: hidden; }
+.sk-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.sk-col { display: flex; flex-direction: column; gap: 10px; }
+
+/* ── header (mirrors .evh) ── */
+.sk-head { display: flex; flex-direction: column; gap: 20px; margin-bottom: 26px; }
+.sk-hero { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; }
+.sk-col { gap: 12px; }
+.sk-stats { display: flex; gap: 10px; }
+.sk-bar { display: flex; gap: 12px; padding: 10px; border-radius: 20px; border: 1px solid var(--sk-line); background: rgba(255,255,255,.03); }
+.sk-filters { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ── events table: timer card on the left, main card on the right (RTL source order = main first, so timer is rendered first and ordered visually) ── */
+.sk-events { display: flex; gap: 18px; align-items: flex-start; direction: rtl; }
+.sk-card-t { border: 1px solid var(--sk-line); border-radius: 18px; overflow: hidden; background: rgba(255,255,255,.02); }
+.sk-card-t--main { flex: 1; min-width: 0; order: 1; }
+.sk-card-t--timer { width: 224px; flex-shrink: 0; order: 2; }
+.sk-th { height: 47px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--sk-line); background: rgba(255,255,255,.035); }
+.sk-th--main { display: grid; grid-template-columns: 44px minmax(150px, 2.4fr) 1fr 70px 90px 1fr 190px; padding: 0 12px; justify-items: center; }
+.sk-tr { height: 77px; border-bottom: 1px solid var(--sk-line); animation: sk-in .45s both; }
+.sk-tr:last-child { border-bottom: 0; }
+.sk-tr--main { display: grid; grid-template-columns: 44px minmax(150px, 2.4fr) 1fr 70px 90px 1fr 190px; align-items: center; padding: 0 12px; justify-items: center; }
+.sk-tr--timer { display: flex; align-items: center; justify-content: center; }
+.sk-name { display: flex; align-items: center; gap: 12px; width: 100%; justify-self: stretch; }
+.sk-name > div { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.sk-cell-c { display: flex; justify-content: center; }
+.sk-acts { gap: 8px; }
+@keyframes sk-in { from { opacity: 0; transform: translateY(6px); } }
+
+/* ── public cards grid ── */
+.sk-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 18px; }
+.sk-card { padding: 20px; border-radius: 20px; border: 1px solid var(--sk-line); display: flex; flex-direction: column; gap: 12px; min-height: 250px; animation: sk-in .45s both; }
+.sk-pub { padding: 28px 24px; max-width: 1280px; margin: 0 auto; }
+
+@media (max-width: 768px) {
+  .sk-top { padding: 0 16px; }
+  .sk-body { padding: 24px 16px; }
+  .sk-stats { width: 100%; display: grid; grid-template-columns: repeat(2, 1fr); }
+  .sk-stats .sk { width: 100% !important; }
+  .sk-bar { flex-direction: column; }
+  .sk-bar .sk { width: 100% !important; }
+  .sk-events { flex-direction: column; }
+  .sk-card-t--timer { display: none; }
+  .sk-th--main, .sk-tr--main { grid-template-columns: 1fr 70px; }
+  .sk-th--main > :not(:nth-child(2)):not(:nth-child(5)), .sk-tr--main > :not(:nth-child(2)):not(:nth-child(5)) { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .sk::after { animation-duration: 3.4s; } .sk-tr, .sk-card { animation: none; } }
+
+/* pre-React markup in index.html: show only the variant for the current route (class set by the head script) */
+.boot-pub, .boot-is-admin .boot-pub, .boot-is-pub .boot-admin { display: none; }
+.boot-is-pub .boot-pub { display: block; }
+.boot-is-admin .boot-admin { display: flex; }
+@media (max-width: 900px) { .sk-nav { display: none; } }
